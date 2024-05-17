@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from rest_framework import permissions, viewsets, generics
+from rest_framework import viewsets, generics
 
 from leaderboard.models import Score
 from leaderboard.permissions import IsValidToken
@@ -13,7 +13,7 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     queryset = User.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsValidToken]
 
 
 class ScoreListCreateView(generics.ListCreateAPIView):
