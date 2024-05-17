@@ -15,6 +15,7 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+
 class ScoreListCreateView(generics.ListCreateAPIView):
     queryset = Score.objects.all()
     serializer_class = ScoreSerializer
