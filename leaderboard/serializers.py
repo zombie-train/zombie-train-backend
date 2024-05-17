@@ -23,12 +23,16 @@ class ScoreSerializer(serializers.HyperlinkedModelSerializer):
         queryset=User.objects.all(),
         source='user',
     )
+    user_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Score
-        fields = ['id', 'score_ts', 'points', 'user_id']
+        fields = ['id', 'score_ts', 'points', 'user_id', 'user_name']
 
     def create(self, validated_data):
         user = validated_data.pop('user')
         score = Score.objects.create(user=user, **validated_data)
         return score
+
+    def get_user_name(self, obj):
+        return obj.user.username
