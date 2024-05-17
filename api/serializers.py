@@ -2,7 +2,7 @@ from django.db.models import Max
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
-from leaderboard.models import Score
+from api.models import Score
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
