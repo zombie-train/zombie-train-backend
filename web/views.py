@@ -1,13 +1,12 @@
-from datetime import datetime
-
 from django.db.models import Max
 from django.shortcuts import render
+from django.utils import timezone
 
 from api.models import Score
 
 
 def leaderboard(request):
-    today = datetime.now().date()
+    today = timezone.now().date()
     scores = (
         Score.objects.filter(score_ts__date=today)
         .values('user__username')
