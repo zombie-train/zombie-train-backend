@@ -17,7 +17,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class ScoreListCreateView(generics.ListCreateAPIView):
-    queryset = Score.objects.all()
+    queryset = Score.objects.all().order_by('-points')
     serializer_class = ScoreSerializer
     permission_classes = [IsValidToken]
 
