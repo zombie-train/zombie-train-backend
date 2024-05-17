@@ -27,6 +27,7 @@ router.register(r'users', views.UserViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include(router.urls)),
+    path('leaderboard/', views.leaderboard, name='leaderboard'),
     path('scores/', ScoreListCreateView.as_view(), name='score-list-create'),
     path('scores/<int:pk>/', ScoreDetailView.as_view(), name='score-detail'),
 
