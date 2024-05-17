@@ -24,9 +24,10 @@ class Command(BaseCommand):
     def create_scores(self):
         users = User.objects.all()
         for user in users:
-            for i in range(5):  # Create 5 scores for each user
-                points = random.randint(1, 100)
-                score_ts = timezone.now() - timedelta(
-                    days=random.randint(0, 10))
-                Score.objects.create(user=user, points=points,
-                                     score_ts=score_ts)
+            for i in range(3):
+                for j in range(3):  # Create 3 x 3 scores for each user
+                    points = random.randint(1, 100)
+                    score_ts = timezone.now() - timedelta(
+                        days=j)
+                    Score.objects.create(user=user, points=points,
+                                         score_ts=score_ts)

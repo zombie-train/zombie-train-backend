@@ -1,7 +1,7 @@
 import base64
 import hashlib
 import hmac
-from datetime import datetime
+from datetime import datetime, timedelta
 from pprint import pprint
 
 import requests
@@ -27,7 +27,7 @@ def test_get_users():
     score = 100
     timestamp, token = generate_token(user_id, score, api_key)
     print(f"Timestamp: {timestamp}, Token: {token}")
-    r = requests.get("http://127.0.0.1:8000/users",
+    r = requests.get("http://127.0.0.1:8000/api/users/",
                      params={
                          "token": token
                      })
@@ -40,25 +40,26 @@ def test_get_scores():
     score = 100
     timestamp, token = generate_token(user_id, score, api_key)
     print(f"Timestamp: {timestamp}, Token: {token}")
-    r = requests.get("http://127.0.0.1:8000/scores/",
+    r = requests.get("http://127.0.0.1:8000/api/scores/",
                      params={
                          "token": token,
-                         "score_date": '2024-05-17'
+                         # "score_date": '2024-05-15'
                      })
     pprint(r.json())
 
 
-def test_post():
+def test_create_score():
     api_key = "common_api_key"
     user_id = 3
     score = 100
     timestamp, token = generate_token(user_id, score, api_key)
     print(f"Timestamp: {timestamp}, Token: {token}")
-    r = requests.post("http://127.0.0.1:8000/scores/",
+    r = requests.post("http://127.0.0.1:8000/api/scores/",
                       params={
                           "token": token
                       },
                       json={"points": 100,
+                            "score_ts": str(datetime.now() - timedelta(days=2)),
                             "user_id": user_id}
                       )
     pprint(r.text)
@@ -85,4 +86,5 @@ def test_create_user():
 if __name__ == '__main__':
     test_get_scores()
     # test_create_user()
-    # test_post()
+    # test_create_score()
+    # test_get_users()
