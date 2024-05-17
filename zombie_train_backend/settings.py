@@ -113,6 +113,8 @@ USE_I18N = True
 
 USE_TZ = True
 
+SECURITY_API_KEY = 'common_api_key'
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
