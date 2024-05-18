@@ -20,4 +20,5 @@ from web import views
 
 urlpatterns = [
     path('leaderboard/', views.leaderboard, name='leaderboard'),
+    path('world_map/', views.world_map, name='world_map'),
 ]

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Map</title>
+    <link rel="stylesheet" href="{% static 'css/world_map.css' %}">
+</head>
+<body>
+    <div class="map-container">
+        <img src="{% static 'images/world-map.png' %}" alt="World Map" class="world-map">
+        <div class="regions">
+            {% for region, score in region_scores.items %}
+                <div class="region {{ region|lower }} {% if score > 1000 %}green{% else %}red{% endif %}">
+                    <span>{{ score }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

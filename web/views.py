@@ -1,8 +1,8 @@
-from django.db.models import Max
+from django.db.models import Max, Sum
 from django.shortcuts import render
 from django.utils import timezone
 
-from api.models import Score
+from api.models import Score, Region
 
 
 def leaderboard(request):
@@ -18,3 +18,18 @@ def leaderboard(request):
         'date': today,
     }
     return render(request, 'leaderboard.html', context)
+
+
+def world_map(request):
+    regions = Region.objects.all()
+    region_scores = {}
+
+    for region in regions:
+        total_score = Score.objects.filter(region=region).aggregate(
+            Sum('points'))['points__sum'] or 0
+        region_scores[region.name] = total_score
+
+    context = {
+        'region_scores': region_scores
+    }
+    return render(request, 'world_map.html', context)
