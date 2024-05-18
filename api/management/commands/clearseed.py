@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
 
 from api.management.commands.seed import MOCK_USERS
-from api.models import Score
+from api.models import Score, Region
 
 
 class Command(BaseCommand):
@@ -10,6 +10,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         self.stdout.write('Clearing seeded data...')
+        self.clear_regions()
         self.clear_scores()
         self.clear_users()
         self.stdout.write('Seeded data cleared successfully.')
@@ -17,6 +18,10 @@ class Command(BaseCommand):
     def clear_scores(self):
         Score.objects.all().delete()
         self.stdout.write('All scores deleted.')
+
+    def clear_regions(self):
+        Region.objects.all().delete()
+        self.stdout.write('All regions deleted.')
 
     def clear_users(self):
         usernames = MOCK_USERS

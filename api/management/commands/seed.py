@@ -69,6 +69,15 @@ MOCK_USERS = [
     'kdhillon1o',
 ]
 
+REGIONS = [
+    "Africa",
+    "Asia",
+    "Europe",
+    "North America",
+    "South America",
+    "Australia"
+]
+
 
 class Command(BaseCommand):
     help = 'Seed the database with initial data'
@@ -93,7 +102,7 @@ class Command(BaseCommand):
             for i in range(3):
                 for j in range(3):  # Create 3 x 3 scores for each user
                     points = random.randint(1, 100)
-                    region_id = random.randint(1, 5)
+                    region_id = random.randint(1, len(REGIONS))
                     score_ts = timezone.now() - timedelta(
                         days=j)
                     Score.objects.create(user=user,
@@ -102,12 +111,5 @@ class Command(BaseCommand):
                                          score_ts=score_ts)
 
     def create_regions(self):
-        regions = [
-            "Africa",
-            "Asia",
-            "Europe",
-            "North America",
-            "South America"
-        ]
-        for region in regions:
+        for region in REGIONS:
             Region.objects.create(name=region)
