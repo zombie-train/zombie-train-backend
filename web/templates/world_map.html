@@ -18,15 +18,33 @@
         </div>
     </div>
     <script>
+        function parseTransform(transform) {
+            const translate = /translate\(([^)]+)\)/.exec(transform);
+            const scale = /scale\(([^)]+)\)/.exec(transform);
+            return {
+                translate: translate ? translate[1].split(',').map(parseFloat) : [0, 0],
+                scale: scale ? scale[1].split(',').map(parseFloat) : [1, 1],
+            };
+        }
+
+        function applyTransform(x, y, transform) {
+            const { translate, scale } = transform;
+            return {
+                x: x * scale[0] + translate[0],
+                y: y * scale[1] + translate[1],
+            };
+        }
+
         function initMap() {
             const regionScores = document.querySelectorAll('.region-score');
             const svgObject = document.getElementById("world-map");
-            const svgDoc = svgObject.contentDocument;
+            const svgDoc = svgObject.contentDocument || svgObject.getSVGDocument();
 
             regionScores.forEach(scoreElement => {
                 const regionId = scoreElement.getAttribute('data-region');
                 const score = parseInt(scoreElement.getAttribute('data-score'), 10);
                 const regionElement = svgDoc.getElementById(regionId);
+
                 if (regionElement) {
                     if (score > 4800) {
                         regionElement.style.fill = 'green'; // Green
@@ -43,15 +61,24 @@
                         regionElement.removeAttribute('stroke');
                         regionElement.removeAttribute('stroke-width');
                     });
-                    // Optionally add score text to the SVG regions
+
+                    // Calculate the center of the bounding box
                     const bbox = regionElement.getBBox();
+                    const centerX = bbox.x + bbox.width / 2;
+                    const centerY = bbox.y + bbox.height / 2;
+
+                    // Apply transformation
+                    const transform = parseTransform(regionElement.getAttribute('transform') || '');
+                    const transformedCenter = applyTransform(centerX, centerY, transform);
+
+                    // Optionally add score text to the SVG regions
                     const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                    textElement.setAttribute('x', bbox.x + bbox.width / 2);
-                    textElement.setAttribute('y', bbox.y + bbox.height / 2);
+                    textElement.setAttribute('x', transformedCenter.x);
+                    textElement.setAttribute('y', transformedCenter.y);
                     textElement.setAttribute('text-anchor', 'middle');
                     textElement.setAttribute('dy', '.35em');
-                    textElement.setAttribute('fill', 'black');
-                    textElement.setAttribute('font-size', '15px'); // Adjust the font size if necessary
+                    textElement.setAttribute('fill', 'cyan');
+                    textElement.setAttribute('font-size', '12px'); // Adjust the font size if necessary
                     textElement.textContent = score;
 
                     svgDoc.documentElement.appendChild(textElement);
