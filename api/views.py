@@ -1,8 +1,8 @@
 from django.contrib.auth.models import User
 from django.utils.dateparse import parse_date
-from rest_framework import viewsets, generics
+from rest_framework import viewsets, generics, serializers
 
-from api.models import Score
+from api.models import Score, Region
 from api.permissions import IsValidToken
 from api.serializers import UserSerializer, \
     ScoreSerializer
@@ -38,3 +38,8 @@ class ScoreDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Score.objects.all()
     serializer_class = ScoreSerializer
     permission_classes = [IsValidToken]
+
+
+class RegionViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Region.objects.all()
+    serializer_class = serializers.ModelSerializer

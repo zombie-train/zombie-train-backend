@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth.models import User
-from api.models import Score
+from api.models import Score, Region
 import random
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -76,6 +76,7 @@ class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         self.stdout.write('Seeding data...')
         self.create_users()
+        self.create_regions()
         self.create_scores()
         self.stdout.write('Data seeded successfully.')
 
@@ -87,11 +88,26 @@ class Command(BaseCommand):
 
     def create_scores(self):
         users = User.objects.all()
+        regions = Region.objects.all()
         for user in users:
             for i in range(3):
                 for j in range(3):  # Create 3 x 3 scores for each user
                     points = random.randint(1, 100)
+                    region_id = random.randint(1, 5)
                     score_ts = timezone.now() - timedelta(
                         days=j)
-                    Score.objects.create(user=user, points=points,
+                    Score.objects.create(user=user,
+                                         points=points,
+                                         region=regions[region_id - 1],
                                          score_ts=score_ts)
+
+    def create_regions(self):
+        regions = [
+            "Africa",
+            "Asia",
+            "Europe",
+            "North America",
+            "South America"
+        ]
+        for region in regions:
+            Region.objects.create(name=region)

@@ -22,6 +22,7 @@ from api.views import ScoreListCreateView, ScoreDetailView
 
 urlpatterns = [
     path('users/', views.UserViewSet.as_view(({'get': 'list'}))),
+    path('regions/', views.RegionViewSet.as_view(({'get': 'list'}))),
     path('scores/', ScoreListCreateView.as_view(), name='score-list-create'),
     path('scores/<int:pk>/', ScoreDetailView.as_view(), name='score-detail'),
 

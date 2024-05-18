@@ -2,7 +2,7 @@ from django.db.models import Max
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
-from api.models import Score
+from api.models import Score, Region
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -24,10 +24,16 @@ class ScoreSerializer(serializers.HyperlinkedModelSerializer):
         source='user',
     )
     user_name = serializers.SerializerMethodField()
+    region_id = serializers.PrimaryKeyRelatedField(
+        queryset=Region.objects.all(),
+        source='region'
+    )
+
 
     class Meta:
         model = Score
-        fields = ['id', 'score_ts', 'points', 'user_id', 'user_name']
+        fields = ['id', 'score_ts', 'points',
+                  'user_id', 'user_name', 'region_id']
 
     def create(self, validated_data):
         user = validated_data.pop('user')
