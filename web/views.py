@@ -27,6 +27,7 @@ def world_map(request):
     for region in regions:
         total_score = Score.objects.filter(region=region).aggregate(
             Sum('points'))['points__sum'] or 0
+        print(region.name, " ", total_score)
         region_scores[region.name] = total_score
 
     context = {
