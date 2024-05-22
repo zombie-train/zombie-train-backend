@@ -13,7 +13,7 @@ class Region(models.Model):
 
 class Score(models.Model):
     id = models.AutoField(primary_key=True)
-    score_ts = models.DateTimeField(default=timezone.now())
+    score_ts = models.DateTimeField(default=timezone.now)
     points = models.IntegerField()
     user = models.ForeignKey(User,
                              related_name='scores',
