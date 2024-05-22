@@ -1,11 +1,11 @@
 from django.contrib.auth.models import User
 from django.utils.dateparse import parse_date
-from rest_framework import viewsets, generics, serializers
+from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope
+from rest_framework import viewsets, generics
 
 from api.models import Score, Region
-from api.permissions import IsValidToken
 from api.serializers import UserSerializer, \
-    ScoreSerializer
+    ScoreSerializer, RegionSerializer
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -14,12 +14,12 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     queryset = User.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
-    permission_classes = [IsValidToken]
+    permission_classes = [TokenHasReadWriteScope]
 
 
 class ScoreListCreateView(generics.ListCreateAPIView):
     serializer_class = ScoreSerializer
-    permission_classes = [IsValidToken]
+    permission_classes = [TokenHasReadWriteScope]
 
     def get_queryset(self):
         queryset = Score.objects.all().order_by('-points')
@@ -37,9 +37,10 @@ class ScoreListCreateView(generics.ListCreateAPIView):
 class ScoreDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Score.objects.all()
     serializer_class = ScoreSerializer
-    permission_classes = [IsValidToken]
+    permission_classes = [TokenHasReadWriteScope]
 
 
 class RegionViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Region.objects.all()
-    serializer_class = serializers.ModelSerializer
+    serializer_class = RegionSerializer
+    permission_classes = [TokenHasReadWriteScope]

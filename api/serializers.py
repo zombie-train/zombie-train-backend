@@ -29,7 +29,6 @@ class ScoreSerializer(serializers.HyperlinkedModelSerializer):
         source='region'
     )
 
-
     class Meta:
         model = Score
         fields = ['id', 'score_ts', 'points',
@@ -42,3 +41,9 @@ class ScoreSerializer(serializers.HyperlinkedModelSerializer):
 
     def get_user_name(self, obj):
         return obj.user.username
+
+
+class RegionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Region
+        fields = ['id', 'name']
