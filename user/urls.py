@@ -20,5 +20,5 @@ from user import views
 
 urlpatterns = [
     path('users/', views.UserViewSet.as_view(({'get': 'list'}))),
-
+    path('profile/', views.UserProfileView.as_view(), name='user-profile'),
 ]
