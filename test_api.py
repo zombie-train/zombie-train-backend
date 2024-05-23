@@ -16,6 +16,11 @@ def generate_token(user_id, score, api_key):
     # Concatenate all key parts
     token_parts = f"{timestamp}:{user_id}:{score}:{signature}"
 
+    # request(login/pass base64encoded) => server
+    # server => api_key(available for an hour)
+    # token_parts => api_key:user_id(user owns this api_key):timestamp
+    #
+
     # Base64 encode the token
     token = base64.b64encode(token_parts.encode()).decode()
     return timestamp, token

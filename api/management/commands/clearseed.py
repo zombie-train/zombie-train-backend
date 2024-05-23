@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
+from user.models import GameUser
 
 from api.management.commands.seed import MOCK_USERS
 from api.models import Score, Region
@@ -25,5 +25,5 @@ class Command(BaseCommand):
 
     def clear_users(self):
         usernames = MOCK_USERS
-        User.objects.filter(username__in=usernames).delete()
+        GameUser.objects.filter(username__in=usernames).delete()
         self.stdout.write(f'Users {", ".join(usernames)} deleted.')

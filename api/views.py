@@ -1,20 +1,9 @@
-from django.contrib.auth.models import User
 from django.utils.dateparse import parse_date
 from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope
 from rest_framework import viewsets, generics
 
 from api.models import Score, Region
-from api.serializers import UserSerializer, \
-    ScoreSerializer, RegionSerializer
-
-
-class UserViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows users to be viewed or edited.
-    """
-    queryset = User.objects.all().order_by('-date_joined')
-    serializer_class = UserSerializer
-    permission_classes = [TokenHasReadWriteScope]
+from api.serializers import ScoreSerializer, RegionSerializer
 
 
 class ScoreListCreateView(generics.ListCreateAPIView):

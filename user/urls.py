@@ -16,14 +16,9 @@ Including another URLconf
 """
 from django.urls import path
 
-from api import views
-from api.views import ScoreListCreateView, ScoreDetailView
-from user.urls import urlpatterns as user_urlpatterns
+from user import views
 
 urlpatterns = [
-    path('regions/', views.RegionViewSet.as_view(({'get': 'list'}))),
-    path('scores/', ScoreListCreateView.as_view(), name='score-list-create'),
-    path('scores/<int:pk>/', ScoreDetailView.as_view(), name='score-detail'),
+    path('users/', views.UserViewSet.as_view(({'get': 'list'}))),
 
-] + user_urlpatterns
-
+]

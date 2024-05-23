@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from django.contrib.auth.models import User
+from user.models import GameUser
 from api.models import Score, Region
 import random
 from datetime import datetime, timedelta
@@ -92,11 +92,11 @@ class Command(BaseCommand):
     def create_users(self):
         usernames = MOCK_USERS
         for username in usernames:
-            if not User.objects.filter(username=username).exists():
-                User.objects.create_user(username=username, password='password')
+            if not GameUser.objects.filter(username=username).exists():
+                GameUser.objects.create_user(username=username, password='password')
 
     def create_scores(self):
-        users = User.objects.all()
+        users = GameUser.objects.all()
         regions = Region.objects.all()
         for user in users:
             for i in range(3):

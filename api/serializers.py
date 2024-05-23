@@ -1,26 +1,12 @@
-from django.db.models import Max
+from user.models import GameUser
 from rest_framework import serializers
-from django.contrib.auth.models import User
 
 from api.models import Score, Region
 
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
-    max_score = serializers.SerializerMethodField()
-
-    class Meta:
-        model = User
-        fields = ['id', 'username', 'max_score']
-
-    def get_max_score(self, obj):
-        max_score = Score.objects.filter(user=obj).aggregate(Max('points'))[
-            'points__max']
-        return max_score if max_score is not None else 0
-
-
 class ScoreSerializer(serializers.HyperlinkedModelSerializer):
     user_id = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(),
+        queryset=GameUser.objects.all(),
         source='user',
     )
     user_name = serializers.SerializerMethodField()
