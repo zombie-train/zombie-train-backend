@@ -87,7 +87,23 @@ class Command(BaseCommand):
         self.create_users()
         self.create_regions()
         self.create_scores()
+        self.create_superuser()
         self.stdout.write('Data seeded successfully.')
+
+    def create_superuser(self):
+        if not GameUser.objects.filter(username='admin').exists():
+            GameUser.objects.create_superuser(
+                username='admin',
+                email='admin@example.com',
+                password='adminpassword',
+                first_name='Admin',
+                last_name='User'
+            )
+            self.stdout.write(
+                self.style.SUCCESS('Successfully created super admin user'))
+        else:
+            self.stdout.write(
+                self.style.WARNING('Super admin user already exists'))
 
     def create_users(self):
         usernames = MOCK_USERS
