@@ -1,7 +1,5 @@
-from django.db.models import Max
 from rest_framework import serializers
 
-from api.models import Score
 from user.models import GameUser
 
 

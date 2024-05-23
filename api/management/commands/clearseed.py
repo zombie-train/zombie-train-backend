@@ -1,8 +1,9 @@
 from django.core.management.base import BaseCommand
-from user.models import GameUser
 
 from api.management.commands.seed import MOCK_USERS
-from api.models import Score, Region
+from api.models import Region
+from score.models import Score
+from user.models import GameUser
 
 
 class Command(BaseCommand):

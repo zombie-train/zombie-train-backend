@@ -1,9 +1,12 @@
-from django.core.management.base import BaseCommand
-from user.models import GameUser
-from api.models import Score, Region
 import random
-from datetime import datetime, timedelta
+from datetime import timedelta
+
+from django.core.management.base import BaseCommand
 from django.utils import timezone
+
+from api.models import Region
+from score.models import Score
+from user.models import GameUser
 
 MOCK_USERS = [
     'glangston0',

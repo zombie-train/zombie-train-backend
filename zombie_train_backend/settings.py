@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'api',
     'web',
     'user',
+    'score',
 ]
 
 MIDDLEWARE = [

@@ -17,13 +17,11 @@ Including another URLconf
 from django.urls import path
 
 from api import views
-from api.views import ScoreListCreateView, ScoreDetailView
+from score.urls import urlpatterns as score_urlpatterns
 from user.urls import urlpatterns as user_urlpatterns
 
 urlpatterns = [
     path('regions/', views.RegionViewSet.as_view(({'get': 'list'}))),
-    path('scores/', ScoreListCreateView.as_view(), name='score-list-create'),
-    path('scores/<int:pk>/', ScoreDetailView.as_view(), name='score-detail'),
-
-] + user_urlpatterns
+] + user_urlpatterns \
+    + score_urlpatterns
 

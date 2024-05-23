@@ -2,7 +2,8 @@ from django.db.models import Max, Sum
 from django.shortcuts import render
 from django.utils import timezone
 
-from api.models import Score, Region
+from api.models import Region
+from score.models import Score
 
 
 def leaderboard(request):
