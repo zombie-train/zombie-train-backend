@@ -56,6 +56,15 @@ def test_get_scores():
                      })
     pprint(r.json())
 
+def test_get_profile():
+    token = generate_token()
+    print(f"Token: {token}")
+    r = requests.get("http://127.0.0.1:8000/api/profile/",
+                     headers={
+                         "Authorization": f"Bearer {token}"
+                     })
+    pprint(r.json())
+
 
 def test_create_score():
     api_key = "common_api_key"
@@ -93,8 +102,9 @@ def test_create_user():
 
 
 if __name__ == '__main__':
-    test_get_scores()
+    # test_get_scores()
     # test_create_user()
     # test_create_score()
-    test_get_users()
+    # test_get_users()
+    test_get_profile()
 
