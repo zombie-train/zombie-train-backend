@@ -1,54 +1,58 @@
-import base64
-import hashlib
-import hmac
+import os
 from datetime import datetime, timedelta
 from pprint import pprint
 
 import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+
+TOKEN = None
 
 
-def generate_token(user_id, score, api_key):
-    timestamp = int(datetime.now().timestamp())
-    message = f"{timestamp}{user_id}{score}"
-    signature = hmac.new(api_key.encode(), message.encode(),
-                         hashlib.sha256).hexdigest()
+def generate_token():
+    if globals()["TOKEN"]:
+        return globals()["TOKEN"]
+    username = os.environ["ADMIN_USERNAME"]
+    password = os.environ["ADMIN_PASSWORD"]
+    client_id = os.environ["CLIENT_ID"]
+    client_secret = os.environ["CLIENT_SECRET"]
+    payload = (f'grant_type=password'
+               f'&username={username}'
+               f'&password={password}'
+               f'&client_id={client_id}'
+               f'&client_secret={client_secret}')
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded'
+    }
 
-    # Concatenate all key parts
-    token_parts = f"{timestamp}:{user_id}:{score}:{signature}"
+    r = requests.post(
+        url="http://127.0.0.1:8000/o/token/",
+        headers=headers,
+        data=payload
+    )
 
-    # request(login/pass base64encoded) => server
-    # server => api_key(available for an hour)
-    # token_parts => api_key:user_id(user owns this api_key):timestamp
-    #
-
-    # Base64 encode the token
-    token = base64.b64encode(token_parts.encode()).decode()
-    return timestamp, token
+    r.raise_for_status()
+    globals()["TOKEN"] = r.json()["access_token"]
+    return globals()["TOKEN"]
 
 
 def test_get_users():
-    api_key = "common_api_key"
-    user_id = 123
-    score = 100
-    timestamp, token = generate_token(user_id, score, api_key)
-    print(f"Timestamp: {timestamp}, Token: {token}")
+    token = generate_token()
+    print(f"Token: {token}")
     r = requests.get("http://127.0.0.1:8000/api/users/",
-                     params={
-                         "token": token
+                     headers={
+                         "Authorization": f"Bearer {token}"
                      })
     pprint(r.json())
 
 
 def test_get_scores():
-    api_key = "common_api_key"
-    user_id = 123
-    score = 100
-    timestamp, token = generate_token(user_id, score, api_key)
-    print(f"Timestamp: {timestamp}, Token: {token}")
+    token = generate_token()
+    print(f"Token: {token}")
     r = requests.get("http://127.0.0.1:8000/api/scores/",
-                     params={
-                         "token": token,
-                         # "score_date": '2024-05-15'
+                     headers={
+                         "Authorization": f"Bearer {token}"
                      })
     pprint(r.json())
 
@@ -92,4 +96,5 @@ if __name__ == '__main__':
     test_get_scores()
     # test_create_user()
     # test_create_score()
-    # test_get_users()
+    test_get_users()
+
