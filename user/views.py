@@ -1,4 +1,4 @@
-from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope
+from oauth2_provider.contrib.rest_framework import TokenHasScope
 from rest_framework import generics
 from rest_framework import viewsets
 
@@ -12,12 +12,12 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     queryset = GameUser.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
-    permission_classes = [TokenHasReadWriteScope]
+    permission_classes = [TokenHasScope]
 
 
 class UserProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
-    permission_classes = [TokenHasReadWriteScope]
+    permission_classes = [TokenHasScope]
 
     def get_object(self):
         return self.request.user

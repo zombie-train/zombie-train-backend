@@ -1,7 +1,6 @@
 from django.utils.dateparse import parse_date
-from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope
+from oauth2_provider.contrib.rest_framework import TokenHasScope
 from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
 
 from api.permissions import has_permission
 from score.models import Score
@@ -13,7 +12,7 @@ class ScoreListCreateView(generics.ListCreateAPIView):
     serializer_class = ScoreSerializer
 
     def get_permissions(self):
-        permission_classes = [IsAuthenticated]
+        permission_classes = [TokenHasScope]
         if self.request.method == 'POST':
             permission_classes.append(
                 has_permission(ScorePermissions.ADD_SCORE))
@@ -38,5 +37,5 @@ class ScoreListCreateView(generics.ListCreateAPIView):
 class ScoreDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Score.objects.all()
     serializer_class = ScoreSerializer
-    permission_classes = [TokenHasReadWriteScope]
+    permission_classes = [TokenHasScope]
 
