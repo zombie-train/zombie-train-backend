@@ -1,15 +1,26 @@
 from django.utils.dateparse import parse_date
 from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope
 from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
 
+from api.permissions import has_permission
 from score.models import Score
+from score.permissions import ScorePermissions
 from score.serializers import ScoreSerializer
 
 
-# Create your views here.
 class ScoreListCreateView(generics.ListCreateAPIView):
     serializer_class = ScoreSerializer
-    permission_classes = [TokenHasReadWriteScope]
+
+    def get_permissions(self):
+        permission_classes = []
+        if self.request.method == 'POST':
+            permission_classes = [IsAuthenticated,
+                                  has_permission(ScorePermissions.ADD_SCORE)]
+        elif self.request.method == 'GET':
+            permission_classes = [IsAuthenticated,
+                                  has_permission(ScorePermissions.VIEW_SCORE)]
+        return [permission() for permission in permission_classes]
 
     def get_queryset(self):
         queryset = Score.objects.all().order_by('-points')

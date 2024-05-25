@@ -5,8 +5,11 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from api.models import Region
+from api.permissions import PLAYER_GROUP_NAME, ADMIN_GROUP_NAME
 from score.models import Score
+from score.permissions import ScorePermissions
 from user.models import GameUser
+from django.contrib.auth.models import Group, Permission
 
 MOCK_USERS = [
     'glangston0',
@@ -84,14 +87,40 @@ REGIONS = [
 
 class Command(BaseCommand):
     help = 'Seed the database with initial data'
+    groups = dict()
 
     def handle(self, *args, **kwargs):
         self.stdout.write('Seeding data...')
+        self.create_groups()
         self.create_users()
         self.create_regions()
         self.create_scores()
         self.create_superuser()
         self.stdout.write('Data seeded successfully.')
+
+    def create_groups(self):
+        player_group, created = Group.objects.get_or_create(
+            name=PLAYER_GROUP_NAME)
+        if created:
+            self.stdout.write(
+                self.style.SUCCESS('Successfully created Player group'))
+            player_permissions = Permission.objects.filter(name__in=[
+                ScorePermissions.ADD_SCORE,
+            ])
+            for player_permission in player_permissions:
+                player_group.permissions.add(player_permission)
+        else:
+            self.stdout.write(self.style.WARNING('Player group already exists'))
+        self.groups[PLAYER_GROUP_NAME] = player_group
+        admin_group, created = Group.objects.get_or_create(
+            name=ADMIN_GROUP_NAME)
+
+        if created:
+            self.stdout.write(
+                self.style.SUCCESS('Successfully created Admin group'))
+            self.groups[ADMIN_GROUP_NAME] = admin_group
+        else:
+            self.stdout.write(self.style.WARNING('Admin group already exists'))
 
     def create_superuser(self):
         if not GameUser.objects.filter(username='admin').exists():
@@ -112,7 +141,8 @@ class Command(BaseCommand):
         usernames = MOCK_USERS
         for username in usernames:
             if not GameUser.objects.filter(username=username).exists():
-                GameUser.objects.create_user(username=username, password='password')
+                GameUser.objects.create_user(username=username,
+                                             password='password')
 
     def create_scores(self):
         users = GameUser.objects.all()

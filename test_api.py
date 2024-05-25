@@ -54,7 +54,7 @@ def test_get_scores():
                      headers={
                          "Authorization": f"Bearer {token}"
                      })
-    pprint(r.json())
+    pprint(r.text)
 
 def test_get_profile():
     token = generate_token()
@@ -102,9 +102,9 @@ def test_create_user():
 
 
 if __name__ == '__main__':
-    # test_get_scores()
+    test_get_scores()
     # test_create_user()
     # test_create_score()
     # test_get_users()
-    test_get_profile()
+    # test_get_profile()
 

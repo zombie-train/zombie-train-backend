@@ -2,14 +2,14 @@ from django.db import models
 from django.utils import timezone
 
 from api.models import Region
-from user.models import GameUser
+from zombie_train_backend import settings
 
 
 class Score(models.Model):
     id = models.AutoField(primary_key=True)
     score_ts = models.DateTimeField(default=timezone.now)
     points = models.IntegerField()
-    user = models.ForeignKey(GameUser,
+    user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              related_name='scores',
                              on_delete=models.CASCADE)
 
