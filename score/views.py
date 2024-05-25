@@ -1,5 +1,5 @@
 from django.utils.dateparse import parse_date
-from rest_framework import generics
+from rest_framework import generics, permissions
 from rest_framework.permissions import IsAuthenticated
 
 from api.permissions import has_permission
@@ -36,6 +36,7 @@ class ScoreListCreateView(generics.ListCreateAPIView):
 
 class LeaderboardListView(generics.ListAPIView):
     serializer_class = LeaderboardSerializer
+    permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
         queryset = Leaderboard.objects.all().order_by('-score__points')
