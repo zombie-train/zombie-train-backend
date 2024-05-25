@@ -20,5 +20,6 @@ from user import views
 
 urlpatterns = [
     path('users/', views.UserViewSet.as_view(({'get': 'list'}))),
+    # path('user/<int:id>/', UserDetailView.as_view(), name='user-detail'),
     path('profile/', views.UserProfileView.as_view(), name='user-profile'),
 ]
