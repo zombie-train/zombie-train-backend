@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from pprint import pprint
 
 import requests
@@ -54,12 +54,30 @@ def test_get_scores():
                      headers={
                          "Authorization": f"Bearer {token}"
                      })
-    pprint(r.text)
+    pprint(r.json())
+
+
+def test_get_leaderboard():
+    token = generate_token()
+    print(f"Token: {token}")
+    r = requests.get("http://127.0.0.1:8000/api/leaderboard/",
+                     params={
+                         # "date":str(date.today())
+                         "score_date": "2024-05-24"
+                     },
+                     headers={
+                         "Authorization": f"Bearer {token}"
+                     })
+    pprint(r.json())
+
 
 def test_get_profile():
     token = generate_token()
     print(f"Token: {token}")
     r = requests.get("http://127.0.0.1:8000/api/profile/",
+                     params={
+                         "token": token
+                     },
                      headers={
                          "Authorization": f"Bearer {token}"
                      })
@@ -102,9 +120,9 @@ def test_create_user():
 
 
 if __name__ == '__main__':
-    test_get_scores()
+    # test_get_scores()
+    test_get_leaderboard()
     # test_create_user()
     # test_create_score()
     # test_get_users()
     # test_get_profile()
-

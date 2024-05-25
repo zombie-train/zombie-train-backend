@@ -1,18 +1,18 @@
 from django.utils.dateparse import parse_date
-from oauth2_provider.contrib.rest_framework import TokenHasScope
 from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
 
 from api.permissions import has_permission
-from score.models import Score
+from score.models import Score, Leaderboard
 from score.permissions import ScorePermissions
-from score.serializers import ScoreSerializer
+from score.serializers import ScoreSerializer, LeaderboardSerializer
 
 
 class ScoreListCreateView(generics.ListCreateAPIView):
     serializer_class = ScoreSerializer
 
     def get_permissions(self):
-        permission_classes = [TokenHasScope]
+        permission_classes = [IsAuthenticated]
         if self.request.method == 'POST':
             permission_classes.append(
                 has_permission(ScorePermissions.ADD_SCORE))
@@ -22,7 +22,7 @@ class ScoreListCreateView(generics.ListCreateAPIView):
         return [permission() for permission in permission_classes]
 
     def get_queryset(self):
-        queryset = Score.objects.all().order_by('-points')
+        queryset = Score.objects.all()
         score_date = self.request.query_params.get('score_date', None)
         if score_date is not None:
             try:
@@ -34,8 +34,17 @@ class ScoreListCreateView(generics.ListCreateAPIView):
         return queryset
 
 
-class ScoreDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Score.objects.all()
-    serializer_class = ScoreSerializer
-    permission_classes = [TokenHasScope]
+class LeaderboardListView(generics.ListAPIView):
+    serializer_class = LeaderboardSerializer
 
+    def get_queryset(self):
+        queryset = Leaderboard.objects.all().order_by('-score__points')
+        score_dt = self.request.query_params.get('score_date', None)
+        if score_dt is not None:
+            try:
+                parsed_date = parse_date(score_dt)
+                if parsed_date:
+                    queryset = queryset.filter(score_dt=parsed_date)
+            except ValueError as e:
+                raise e  # Optionally, handle invalid date format
+        return queryset

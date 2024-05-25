@@ -2,7 +2,7 @@ from api.models import Region
 from user.models import GameUser
 from rest_framework import serializers
 
-from score.models import Score
+from score.models import Score, Leaderboard
 
 
 class ScoreSerializer(serializers.HyperlinkedModelSerializer):
@@ -28,3 +28,25 @@ class ScoreSerializer(serializers.HyperlinkedModelSerializer):
 
     def get_user_name(self, obj):
         return obj.user.username
+
+
+class LeaderboardSerializer(serializers.ModelSerializer):
+    user_id = serializers.IntegerField(source='user.id', read_only=True)
+    user_name = serializers.CharField(source='user.username', read_only=True)
+    region_id = serializers.IntegerField(source='region.id', read_only=True)
+    region_name = serializers.CharField(source='region.name', read_only=True)
+    score_id = serializers.IntegerField(source='score.id', read_only=True)
+    score_points = serializers.IntegerField(source='score.points',
+                                            read_only=True)
+    score_dt = serializers.SerializerMethodField()
+
+
+    class Meta:
+        model = Leaderboard
+        fields = ['user_id', 'user_name',
+                  'region_id', 'region_name',
+                  'score_id', 'score_points', 'score_dt',
+                  ]
+
+    def get_score_dt(self, obj):
+        return obj.score.score_ts.date()
