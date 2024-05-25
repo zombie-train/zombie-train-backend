@@ -1,6 +1,4 @@
-from user.models import GameUser
 from django.db import models
-from django.utils import timezone
 
 
 class Region(models.Model):
