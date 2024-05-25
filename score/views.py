@@ -13,13 +13,13 @@ class ScoreListCreateView(generics.ListCreateAPIView):
     serializer_class = ScoreSerializer
 
     def get_permissions(self):
-        permission_classes = []
+        permission_classes = [IsAuthenticated]
         if self.request.method == 'POST':
-            permission_classes = [IsAuthenticated,
-                                  has_permission(ScorePermissions.ADD_SCORE)]
+            permission_classes.append(
+                has_permission(ScorePermissions.ADD_SCORE))
         elif self.request.method == 'GET':
-            permission_classes = [IsAuthenticated,
-                                  has_permission(ScorePermissions.VIEW_SCORE)]
+            permission_classes.append(
+                has_permission(ScorePermissions.VIEW_SCORE))
         return [permission() for permission in permission_classes]
 
     def get_queryset(self):
