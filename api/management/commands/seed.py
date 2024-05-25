@@ -112,6 +112,7 @@ class Command(BaseCommand):
         else:
             self.stdout.write(self.style.WARNING('Player group already exists'))
         self.groups[PLAYER_GROUP_NAME] = player_group
+
         admin_group, created = Group.objects.get_or_create(
             name=ADMIN_GROUP_NAME)
 
@@ -119,6 +120,11 @@ class Command(BaseCommand):
             self.stdout.write(
                 self.style.SUCCESS('Successfully created Admin group'))
             self.groups[ADMIN_GROUP_NAME] = admin_group
+            admin_permissions = Permission.objects.filter(name__in=[
+                ScorePermissions.VIEW_SCORE,
+            ])
+            for admin_permission in admin_permissions:
+                player_group.permissions.add(admin_permission)
         else:
             self.stdout.write(self.style.WARNING('Admin group already exists'))
 
