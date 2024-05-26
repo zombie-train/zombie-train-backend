@@ -161,7 +161,7 @@ class Command(BaseCommand):
                     score_ts = timezone.now() - timedelta(
                         days=j)
                     Score.objects.create(user=user,
-                                         points=points,
+                                         value=points,
                                          region=regions[region_id - 1],
                                          score_ts=score_ts)
 

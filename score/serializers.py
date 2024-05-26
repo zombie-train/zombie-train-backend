@@ -18,7 +18,7 @@ class ScoreSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Score
-        fields = ['id', 'score_ts', 'points',
+        fields = ['id', 'score_ts', 'value',
                   'user_id', 'user_name', 'region_id']
 
     def create(self, validated_data):
@@ -36,7 +36,7 @@ class LeaderboardSerializer(serializers.ModelSerializer):
     region_id = serializers.IntegerField(source='region.id', read_only=True)
     region_name = serializers.CharField(source='region.name', read_only=True)
     score_id = serializers.IntegerField(source='score.id', read_only=True)
-    score_points = serializers.IntegerField(source='score.points',
+    score_value = serializers.IntegerField(source='score.value',
                                             read_only=True)
     score_dt = serializers.SerializerMethodField()
 
@@ -45,7 +45,7 @@ class LeaderboardSerializer(serializers.ModelSerializer):
         model = Leaderboard
         fields = ['user_id', 'user_name',
                   'region_id', 'region_name',
-                  'score_id', 'score_points', 'score_dt',
+                  'score_id', 'score_value', 'score_dt',
                   ]
 
     def get_score_dt(self, obj):

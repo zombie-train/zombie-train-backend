@@ -39,7 +39,7 @@ class LeaderboardListView(generics.ListAPIView):
     permission_classes = [permissions.AllowAny]
 
     def get_queryset(self):
-        queryset = Leaderboard.objects.all().order_by('-score__points')
+        queryset = Leaderboard.objects.all().order_by('-score__value')
         score_dt = self.request.query_params.get('score_date', None)
         if score_dt is not None:
             try:
