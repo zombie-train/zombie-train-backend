@@ -11,7 +11,7 @@ def leaderboard(request):
     scores = (
         Score.objects.filter(score_ts__date=today)
         .values('user__username')
-        .annotate(daily_max_points=Max('points'))
+        .annotate(daily_max_points=Max('value'))
         .order_by('-daily_max_points')
     )
     context = {
@@ -23,11 +23,16 @@ def leaderboard(request):
 
 def world_map(request):
     regions = Region.objects.all()
+
+    # Annotate each region with the total score value
+    regions_with_scores = regions.annotate(total_score=Sum('scores__value'))
+
+    # Create a dictionary to store the region scores
     region_scores = {}
 
-    for region in regions:
-        total_score = Score.objects.filter(region=region).aggregate(
-            Sum('points'))['points__sum'] or 0
+    # Iterate over the annotated regions to populate the dictionary
+    for region in regions_with_scores:
+        total_score = region.total_score or 0  # Use 0 if total_score is None
         print(region.name, " ", total_score)
         region_scores[region.name] = total_score
 
