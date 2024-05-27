@@ -84,8 +84,25 @@ def test_get_profile():
     token = generate_token()
     print(f"Token: {token}")
     r = requests.get("http://127.0.0.1:8000/api/profile/",
-                     params={
-                         "token": token
+                     headers={
+                         "Authorization": f"Bearer {token}"
+                     })
+    pprint(r.json())
+
+
+def test_update_profile():
+    token = generate_token()
+    print(f"Token: {token}")
+    r = requests.get("http://127.0.0.1:8000/api/regions/",
+                     headers={
+                         "Authorization": f"Bearer {token}"
+                     })
+    regions = r.json()
+    new_region = regions[4]
+    print("New region will be: " + str(new_region))
+    r = requests.patch("http://127.0.0.1:8000/api/profile/",
+                     json={
+                         "current_region_id": new_region["id"]
                      },
                      headers={
                          "Authorization": f"Bearer {token}"
@@ -128,9 +145,9 @@ def test_create_user():
 
 
 if __name__ == '__main__':
-    test_get_scores()
+    # test_get_scores()
     # test_get_leaderboard()
     # test_create_user()
     # test_create_score()
     # test_get_users()
-    # test_get_profile()
+    test_update_profile()
