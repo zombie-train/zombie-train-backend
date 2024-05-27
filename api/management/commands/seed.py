@@ -6,6 +6,7 @@ from django.utils import timezone
 
 from api.models import Region
 from api.permissions import PLAYER_GROUP_NAME, ADMIN_GROUP_NAME
+from api.utils import get_default_region
 from score.models import Score
 from score.permissions import ScorePermissions
 from user.models import GameUser
@@ -91,9 +92,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         self.stdout.write('Seeding data...')
+        self.create_regions()
         self.create_groups()
         self.create_users()
-        self.create_regions()
         self.create_scores()
         self.create_superuser()
         self.stdout.write('Data seeded successfully.')
@@ -130,13 +131,15 @@ class Command(BaseCommand):
 
     def create_superuser(self):
         if not GameUser.objects.filter(username='admin').exists():
-            GameUser.objects.create_superuser(
+            admin_user = GameUser.objects.create_superuser(
                 username='admin',
                 email='admin@example.com',
                 password='adminpassword',
                 first_name='Admin',
-                last_name='User'
+                last_name='User',
             )
+            admin_user.current_region = get_default_region()
+            admin_user.save()
             self.stdout.write(
                 self.style.SUCCESS('Successfully created super admin user'))
         else:
@@ -148,6 +151,7 @@ class Command(BaseCommand):
         for username in usernames:
             if not GameUser.objects.filter(username=username).exists():
                 GameUser.objects.create_user(username=username,
+                                             current_region=get_default_region(),
                                              password='password')
 
     def create_scores(self):

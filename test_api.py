@@ -1,13 +1,27 @@
 import os
-from datetime import datetime, timedelta, date
 from pprint import pprint
 
 import requests
+from cryptography.fernet import Fernet
+
 from dotenv import load_dotenv
 
 load_dotenv()
 
 TOKEN = None
+
+
+def salt_value(value):
+    SALTY_COEFFICIENT = int(os.environ["SALTY_COEFFICIENT"])
+    return value * SALTY_COEFFICIENT
+
+
+def hash_value(value):
+    HASH_SCORE_KEY = os.environ["HASH_SCORE_KEY"]
+    cipher_suite = Fernet(HASH_SCORE_KEY)
+    byte_value = str(value).encode('utf-8')
+    hashed_value = cipher_suite.encrypt(byte_value)
+    return hashed_value.decode('utf-8')
 
 
 def generate_token():
@@ -80,19 +94,18 @@ def test_get_profile():
 
 
 def test_create_score():
-    api_key = "common_api_key"
-    user_id = 3
-    score = 100
-    timestamp, token = generate_token(user_id, score, api_key)
-    print(f"Timestamp: {timestamp}, Token: {token}")
+    score = 120
+    salted_score = salt_value(score)
+    hashed_value = hash_value(salted_score)
+    token = generate_token()
+    print(f"Token: {token}")
     r = requests.post("http://127.0.0.1:8000/api/scores/",
-                      params={
-                          "token": token
+                      headers={
+                          "Authorization": f"Bearer {token}"
                       },
-                      json={"points": 100,
-                            "score_ts": str(datetime.now() - timedelta(days=2)),
-                            "user_id": user_id}
+                      json={"hashed_value": hashed_value, }
                       )
+
     pprint(r.text)
 
 
@@ -115,8 +128,8 @@ def test_create_user():
 
 
 if __name__ == '__main__':
-    # test_get_scores()
-    test_get_leaderboard()
+    test_get_scores()
+    # test_get_leaderboard()
     # test_create_user()
     # test_create_score()
     # test_get_users()

@@ -2,9 +2,9 @@
 
 from django.conf import settings
 from django.db import migrations, models
-import django.db.models.deletion
 import django.utils.datetime_safe
-import score.utils
+
+from api.utils import get_default_region
 
 
 class Migration(migrations.Migration):
@@ -29,7 +29,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='score',
             name='region',
-            field=models.ForeignKey(default=score.utils.get_default_region, on_delete=django.db.models.deletion.CASCADE, related_name='scores', to='api.region'),
+            field=models.ForeignKey(default=get_default_region, on_delete=django.db.models.deletion.CASCADE, related_name='scores', to='api.region'),
         ),
         migrations.CreateModel(
             name='Leaderboard',

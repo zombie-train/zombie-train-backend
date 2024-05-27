@@ -3,7 +3,6 @@ from django.utils import timezone
 from django.utils.datetime_safe import date
 
 from api.models import Region
-from score.utils import get_default_region
 from zombie_train_backend import settings
 
 
@@ -17,7 +16,6 @@ class Score(models.Model):
     region = models.ForeignKey(Region,
                                related_name='scores',
                                on_delete=models.CASCADE,
-                               default=get_default_region
                                )
 
     score_ts = models.DateTimeField(default=timezone.now)
@@ -43,4 +41,7 @@ class Leaderboard(models.Model):
         unique_together = ('user', 'region', 'score_dt')
 
     def __str__(self):
-        return f"{self.user.username} - {self.region.name} - {self.score_dt} - {self.score.value}"
+        return (f"{self.user.username} "
+                f"- {self.region.name} "
+                f"- {self.score_dt} "
+                f"- {self.score.value}")
