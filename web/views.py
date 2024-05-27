@@ -33,7 +33,6 @@ def world_map(request):
     # Iterate over the annotated regions to populate the dictionary
     for region in regions_with_scores:
         total_score = region.total_score or 0  # Use 0 if total_score is None
-        print(region.name, " ", total_score)
         region_scores[region.name] = total_score
 
     context = {
