@@ -12,6 +12,8 @@ from score.permissions import ScorePermissions
 from user.models import GameUser
 from django.contrib.auth.models import Group, Permission
 
+from user.permissions import UserPermissions
+
 MOCK_USERS = [
     'glangston0',
     'bturmell1',
@@ -123,6 +125,9 @@ class Command(BaseCommand):
             self.groups[ADMIN_GROUP_NAME] = admin_group
             admin_permissions = Permission.objects.filter(name__in=[
                 ScorePermissions.VIEW_SCORE,
+                UserPermissions.VIEW_USER,
+                UserPermissions.DELETE_USER,
+                UserPermissions.CHANGE_USER
             ])
             for admin_permission in admin_permissions:
                 player_group.permissions.add(admin_permission)

@@ -54,7 +54,7 @@ def generate_token():
 def test_get_users():
     token = generate_token()
     print(f"Token: {token}")
-    r = requests.get("http://127.0.0.1:8000/api/users/",
+    r = requests.get("http://127.0.0.1:8000/api/users/675/",
                      headers={
                          "Authorization": f"Bearer {token}"
                      })
@@ -149,5 +149,5 @@ if __name__ == '__main__':
     # test_get_leaderboard()
     # test_create_user()
     # test_create_score()
-    # test_get_users()
-    test_update_profile()
+    test_get_users()
+    # test_update_profile()
