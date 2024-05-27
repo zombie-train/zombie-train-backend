@@ -13,4 +13,7 @@ def has_permission(perm):
         def has_permission(self, request, view):
             return request.user.has_perm(perm=perm)
 
+        def __str__(self):
+            return f"HasPermission<{perm}>"
+
     return HasPermission
