@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'oauth2_provider',
     'corsheaders',
+    'drf_yasg',
     'api',
     'web',
     'user',
@@ -58,7 +59,6 @@ MIDDLEWARE = [
 
 CORS_ORIGIN_ALLOW_ALL = True
 
-
 ROOT_URLCONF = 'zombie_train_backend.urls'
 
 OAUTH2_PROVIDER = {
@@ -73,7 +73,6 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
 }
-
 
 TEMPLATES = [
     {
