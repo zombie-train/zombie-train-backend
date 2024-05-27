@@ -1,4 +1,4 @@
-from rest_framework import generics
+from rest_framework import generics, permissions
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
@@ -14,10 +14,17 @@ class UserViewSet(viewsets.ModelViewSet):
     """
     queryset = GameUser.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated,
-                          has_permission(UserPermissions.VIEW_USER),
-                          has_permission(UserPermissions.CHANGE_USER),
-                          has_permission(UserPermissions.DELETE_USER)]
+
+    def get_permissions(self):
+        # Allow to create a profile to everyone
+        if self.request.method == 'POST':
+            permission_classes = [permissions.AllowAny]
+        else:
+            permission_classes = [IsAuthenticated,
+                                  has_permission(UserPermissions.VIEW_USER),
+                                  has_permission(UserPermissions.CHANGE_USER),
+                                  has_permission(UserPermissions.DELETE_USER)]
+        return [permission() for permission in permission_classes]
 
 
 class UserProfileView(generics.RetrieveUpdateAPIView):

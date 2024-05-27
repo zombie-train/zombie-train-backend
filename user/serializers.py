@@ -4,9 +4,10 @@ from api.models import Region
 from user.models import GameUser
 
 
-class UserSerializer(serializers.HyperlinkedModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     current_region_id = serializers.IntegerField(required=False)
     current_region_name = serializers.SerializerMethodField(read_only=True)
+    password = serializers.CharField(write_only=True)
 
     class Meta:
         model = GameUser
@@ -14,6 +15,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
                   'username',
                   'current_region_id',
                   'current_region_name',
+                  'password',
                   'date_joined'
                   ]
 
@@ -32,4 +34,19 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
             except Region.DoesNotExist:
                 raise serializers.ValidationError(
                     {'current_region_id': 'Invalid region ID'})
+
+        password = validated_data.pop('password', None)
+        user = super().update(instance, validated_data)
+        if password:
+            user.set_password(password)
+            user.save()
         return super().update(instance, validated_data)
+
+    def create(self, validated_data):
+        password = validated_data.pop('password', None)
+        user = super().create(validated_data)
+        if password:
+            user.set_password(password)
+            user.save()
+        return user
+

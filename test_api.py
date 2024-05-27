@@ -127,18 +127,11 @@ def test_create_score():
 
 
 def test_create_user():
-    api_key = "common_api_key"
-    user_id = 0
-    score = 111
-    timestamp, token = generate_token(user_id, score, api_key)
-    print(f"Timestamp: {timestamp}, Token: {token}")
     r = requests.post(
-        "http://127.0.0.1:8000/users/",
-        params={
-            "token": token
-        },
+        "http://127.0.0.1:8000/api/users/",
         json={
             "username": "created_user",
+            "password": "password"
         }
     )
     pprint(r.text)
@@ -147,7 +140,8 @@ def test_create_user():
 if __name__ == '__main__':
     # test_get_scores()
     # test_get_leaderboard()
-    # test_create_user()
     # test_create_score()
-    test_get_users()
-    # test_update_profile()
+    # test_get_users()
+    test_update_profile()
+    # test_create_user()
+    # test_get_profile()
