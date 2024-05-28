@@ -21,7 +21,7 @@ class Score(models.Model):
     score_ts = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f'{self.user.username} - {self.value}'
+        return f'{self.user.username} - {self.region.name} - {self.value}'
 
 
 class Leaderboard(models.Model):
