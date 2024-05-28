@@ -97,8 +97,8 @@ class Command(BaseCommand):
         self.create_regions()
         self.create_groups()
         self.create_users()
-        self.create_scores()
         self.create_superuser()
+        self.create_scores()
         self.stdout.write('Data seeded successfully.')
 
     def create_groups(self):
@@ -135,6 +135,7 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING('Admin group already exists'))
 
     def create_superuser(self):
+        admin_user = GameUser.objects.filter(username='admin').first()
         if not GameUser.objects.filter(username='admin').exists():
             admin_user = GameUser.objects.create_superuser(
                 username='admin',
@@ -143,13 +144,13 @@ class Command(BaseCommand):
                 first_name='Admin',
                 last_name='User',
             )
-            admin_user.current_region = get_default_region()
-            admin_user.save()
             self.stdout.write(
                 self.style.SUCCESS('Successfully created super admin user'))
         else:
             self.stdout.write(
                 self.style.WARNING('Super admin user already exists'))
+        admin_user.current_region = get_default_region()
+        admin_user.save()
 
     def create_users(self):
         usernames = MOCK_USERS
