@@ -1,23 +1,35 @@
+from django.utils import timezone
 from rest_framework import serializers
 
 from api.models import Region
+from score.models import Leaderboard
 from user.models import GameUser
 
 
 class UserSerializer(serializers.ModelSerializer):
     current_region_id = serializers.IntegerField(required=False)
     current_region_name = serializers.SerializerMethodField(read_only=True)
+    current_region_score_id = serializers.IntegerField(
+        source='current_region_score.id', read_only=True)
+    current_region_score_value = serializers.IntegerField(
+        source='current_region_score.value', read_only=True)
     password = serializers.CharField(write_only=True)
 
     class Meta:
         model = GameUser
-        fields = ['id',
-                  'username',
-                  'current_region_id',
-                  'current_region_name',
-                  'password',
-                  'date_joined'
-                  ]
+        fields = [
+            'id',
+            'username',
+            'current_region_id',
+            'current_region_name',
+            'current_region_score_id',
+            'current_region_score_value',
+            'is_banned',
+            'is_cheater',
+            'is_suspicious',
+            'password',
+            'date_joined'
+        ]
 
     def get_current_region_id(self, obj):
         return obj.current_region.id if obj.current_region else None
@@ -31,16 +43,28 @@ class UserSerializer(serializers.ModelSerializer):
             try:
                 instance.current_region = Region.objects.get(
                     id=current_region_id)
+
+                # Retrieve the latest Score for the specified region from the Leaderboard
+                latest_leaderboard_entry = Leaderboard.objects.filter(
+                    user=instance,
+                    region_id=current_region_id,
+                    score_dt=timezone.now().date()
+                ).first()
+                if latest_leaderboard_entry:
+                    instance.current_region_score = latest_leaderboard_entry.score
+                else:
+                    instance.current_region_score = None
             except Region.DoesNotExist:
                 raise serializers.ValidationError(
-                    {'current_region_id': 'Invalid region ID'})
+                    {'current_region_id': 'Invalid region ID'}
+                )
 
         password = validated_data.pop('password', None)
         user = super().update(instance, validated_data)
         if password:
             user.set_password(password)
             user.save()
-        return super().update(instance, validated_data)
+        return user
 
     def create(self, validated_data):
         password = validated_data.pop('password', None)
@@ -49,4 +73,3 @@ class UserSerializer(serializers.ModelSerializer):
             user.set_password(password)
             user.save()
         return user
-
