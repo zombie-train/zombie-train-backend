@@ -31,3 +31,30 @@ class ScoreSerializerTest(TestCase):
         self.assertEqual(data['value'], 100)
         self.assertEqual(data['user_id'], self.user.id)
         self.assertEqual(data['region_id'], self.region.id)
+
+
+# file: score/tests/test_serializers.py
+
+from django.test import TestCase
+from django.contrib.auth import get_user_model
+from api.models import Region
+from score.models import Score
+from score.serializers import ScoreSerializer
+
+User = get_user_model()
+
+
+class ScoreSerializerTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser',
+                                             password='12345')
+        self.region = Region.objects.create(name='Test Region')
+        self.score = Score.objects.create(user=self.user, region=self.region,
+                                          value=100)
+
+    def test_score_serialization(self):
+        serializer = ScoreSerializer(self.score)
+        data = serializer.data
+        self.assertEqual(data['value'], 100)
+        self.assertEqual(data['user_id'], self.user.id)
+        self.assertEqual(data['region_id'], self.region.id)

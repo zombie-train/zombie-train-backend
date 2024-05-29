@@ -1,10 +1,11 @@
 from django.test import TestCase
-from rest_framework.test import APIClient
+from django.urls import reverse
+from django.utils import timezone
 from rest_framework import status
+from rest_framework.test import APITestCase, APIClient
+
 from score.models import Score, Region
 from user.models import GameUser
-from django.utils import timezone
-from django.urls import reverse
 
 
 class ScoreViewTest(TestCase):
@@ -31,3 +32,19 @@ class ScoreViewTest(TestCase):
         response = self.client.post(reverse('score-list'), data, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(Score.objects.count(), 1)
+
+
+class LeaderboardAPITests(APITestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = GameUser.objects.create_user(username='testuser',
+                                                 password='12345')
+        self.region = Region.objects.create(name='Test Region')
+        self.score = Score.objects.create(user=self.user, region=self.region,
+                                          value=100)
+
+    def test_get_leaderboard(self):
+        url = reverse('leaderboard-list')
+        response = self.client.get(url, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
