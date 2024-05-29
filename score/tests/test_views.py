@@ -21,13 +21,13 @@ class ScoreViewTest(TestCase):
         self.region.delete()
         self.score.delete()
 
-    def test_get_scores(self):
+    def test_get_scores_unauthorized(self):
         response = self.client.get(reverse('score-list'))
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_create_score(self):
+    def test_create_score_unauthorized(self):
         data = {'user': self.user.id, 'region': self.region.id, 'value': 150,
                 'score_ts': timezone.now()}
         response = self.client.post(reverse('score-list'), data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Score.objects.count(), 2)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(Score.objects.count(), 1)

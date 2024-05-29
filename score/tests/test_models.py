@@ -3,12 +3,14 @@ from score.models import Score, Region
 from user.models import GameUser
 from django.utils import timezone
 
+
 class ScoreModelTest(TestCase):
 
     def setUp(self):
         self.user = GameUser.objects.create(username='testuser')
         self.region = Region.objects.create(name='Test Region')
-        self.score = Score.objects.create(user=self.user, region=self.region, value=100, score_ts=timezone.now())
+        self.score = Score.objects.create(user=self.user, region=self.region,
+                                          value=100, score_ts=timezone.now())
 
     def tearDown(self):
         self.user.delete()
