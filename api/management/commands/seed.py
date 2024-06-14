@@ -1,3 +1,4 @@
+import os
 import random
 from datetime import timedelta
 
@@ -135,12 +136,14 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING('Admin group already exists'))
 
     def create_superuser(self):
-        admin_user = GameUser.objects.filter(username='admin').first()
-        if not GameUser.objects.filter(username='admin').exists():
+        admin_username = os.getenv("ADMIN_USERNAME")
+        admin_password = os.getenv("ADMIN_PASSWORD")
+        admin_user = GameUser.objects.filter(username=admin_username).first()
+        if not GameUser.objects.filter(username=admin_username).exists():
             admin_user = GameUser.objects.create_superuser(
-                username='admin',
+                username=admin_username,
                 email='admin@example.com',
-                password='adminpassword',
+                password=admin_password,
                 first_name='Admin',
                 last_name='User',
             )
