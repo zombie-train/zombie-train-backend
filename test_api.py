@@ -10,6 +10,8 @@ load_dotenv()
 
 TOKEN = None
 
+URL = 'http://34.79.175.2:8080/'
+
 
 def salt_value(value):
     SALTY_COEFFICIENT = int(os.environ["SALTY_COEFFICIENT"])
@@ -41,7 +43,7 @@ def generate_token():
     }
 
     r = requests.post(
-        url="http://127.0.0.1:8000/o/token/",
+        url=URL + "o/token/",
         headers=headers,
         data=payload
     )
@@ -54,7 +56,7 @@ def generate_token():
 def test_get_users():
     token = generate_token()
     print(f"Token: {token}")
-    r = requests.get("http://127.0.0.1:8000/api/users/675/",
+    r = requests.get(URL + "api/users/675/",
                      headers={
                          "Authorization": f"Bearer {token}"
                      })
@@ -64,7 +66,7 @@ def test_get_users():
 def test_get_scores():
     token = generate_token()
     print(f"Token: {token}")
-    r = requests.get("http://127.0.0.1:8000/api/scores/",
+    r = requests.get(URL + "api/scores/",
                      headers={
                          "Authorization": f"Bearer {token}"
                      })
@@ -72,7 +74,7 @@ def test_get_scores():
 
 
 def test_get_leaderboard():
-    r = requests.get("http://127.0.0.1:8000/api/leaderboard/",
+    r = requests.get(URL + "api/leaderboard/",
                      params={
                          # "date":str(date.today())
                          "score_date": "2024-05-24"
@@ -83,7 +85,7 @@ def test_get_leaderboard():
 def test_get_profile():
     token = generate_token()
     print(f"Token: {token}")
-    r = requests.get("http://127.0.0.1:8000/api/profile/",
+    r = requests.get(URL + "api/profile/",
                      headers={
                          "Authorization": f"Bearer {token}"
                      })
@@ -93,20 +95,20 @@ def test_get_profile():
 def test_update_profile():
     token = generate_token()
     print(f"Token: {token}")
-    r = requests.get("http://127.0.0.1:8000/api/regions/",
+    r = requests.get(URL + "api/regions/",
                      headers={
                          "Authorization": f"Bearer {token}"
                      })
     regions = r.json()
     new_region = regions[4]
     print("New region will be: " + str(new_region))
-    r = requests.patch("http://127.0.0.1:8000/api/profile/",
-                     json={
-                         "current_region_id": new_region["id"]
-                     },
-                     headers={
-                         "Authorization": f"Bearer {token}"
-                     })
+    r = requests.patch(URL + "api/profile/",
+                       json={
+                           "current_region_id": new_region["id"]
+                       },
+                       headers={
+                           "Authorization": f"Bearer {token}"
+                       })
     pprint(r.json())
 
 
@@ -116,7 +118,7 @@ def test_create_score():
     hashed_value = hash_value(salted_score)
     token = generate_token()
     print(f"Token: {token}")
-    r = requests.post("http://127.0.0.1:8000/api/scores/",
+    r = requests.post(URL + "api/scores/",
                       headers={
                           "Authorization": f"Bearer {token}"
                       },
@@ -128,7 +130,7 @@ def test_create_score():
 
 def test_create_user():
     r = requests.post(
-        "http://127.0.0.1:8000/api/users/",
+        URL + "api/users/",
         json={
             "username": "created_user",
             "password": "password"
@@ -142,6 +144,6 @@ if __name__ == '__main__':
     # test_get_leaderboard()
     # test_create_score()
     # test_get_users()
-    test_update_profile()
+    # test_update_profile()
     # test_create_user()
-    # test_get_profile()
+    test_get_profile()
