@@ -16,6 +16,7 @@ services:
     build: .
     volumes:
       - .:/app
+      - ./static:/app/static  # Bind mount for static files
     expose:
       - "8000"
     depends_on:
@@ -32,10 +33,14 @@ services:
       dockerfile: Dockerfile.nginx
     ports:
       - "80:80"
+      - "443:443"
     volumes:
-      - ./static:/app/static
+      - ./static:/app/static  # Bind mount for static files
+      - ./certs:/etc/letsencrypt  # Bind mount for Let's Encrypt certificates
     depends_on:
       - web
+    environment:
+      - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS}
 
 volumes:
   postgres_data:
