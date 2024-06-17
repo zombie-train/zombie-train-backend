@@ -41,6 +41,7 @@ services:
       - web
     environment:
       - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
 
 volumes:
   postgres_data:
