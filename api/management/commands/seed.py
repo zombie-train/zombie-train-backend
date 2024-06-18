@@ -108,15 +108,14 @@ class Command(BaseCommand):
         if created:
             self.stdout.write(
                 self.style.SUCCESS('Successfully created Player group'))
+            player_permissions = Permission.objects.filter(name__in=[
+                ScorePermissions.ADD_SCORE,
+            ])
+            for player_permission in player_permissions:
+                player_group.permissions.add(player_permission)
         else:
             self.stdout.write(self.style.WARNING('Player group already exists'))
         self.groups[PLAYER_GROUP_NAME] = player_group
-
-        player_permissions = Permission.objects.filter(name__in=[
-            ScorePermissions.ADD_SCORE,
-        ])
-        for player_permission in player_permissions:
-            player_group.permissions.add(player_permission)
 
         admin_group, created = Group.objects.get_or_create(
             name=ADMIN_GROUP_NAME)
@@ -124,18 +123,17 @@ class Command(BaseCommand):
         if created:
             self.stdout.write(
                 self.style.SUCCESS('Successfully created Admin group'))
+            self.groups[ADMIN_GROUP_NAME] = admin_group
+            admin_permissions = Permission.objects.filter(name__in=[
+                ScorePermissions.VIEW_SCORE,
+                UserPermissions.VIEW_USER,
+                UserPermissions.DELETE_USER,
+                UserPermissions.CHANGE_USER
+            ])
+            for admin_permission in admin_permissions:
+                player_group.permissions.add(admin_permission)
         else:
             self.stdout.write(self.style.WARNING('Admin group already exists'))
-
-        self.groups[ADMIN_GROUP_NAME] = admin_group
-        admin_permissions = Permission.objects.filter(name__in=[
-            ScorePermissions.VIEW_SCORE,
-            UserPermissions.VIEW_USER,
-            UserPermissions.DELETE_USER,
-            UserPermissions.CHANGE_USER
-        ])
-        for admin_permission in admin_permissions:
-            player_group.permissions.add(admin_permission)
 
     def create_superuser(self):
         admin_username = os.getenv("ADMIN_USERNAME")
