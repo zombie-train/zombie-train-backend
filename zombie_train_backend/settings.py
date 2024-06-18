@@ -33,8 +33,8 @@ ALLOWED_HOSTS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1"),
-    "www." + os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1"),
+    "https://" + os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1"),
+    "https://www." + os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1"),
 ]
 
 # Application definition
