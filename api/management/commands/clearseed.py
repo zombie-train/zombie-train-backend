@@ -11,7 +11,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         self.stdout.write('Clearing seeded data...')
-        self.clear_regions()
+        # Wait with clearing users for now
+        # self.clear_regions()
         self.clear_scores()
         self.clear_users()
         self.stdout.write('Seeded data cleared successfully.')
