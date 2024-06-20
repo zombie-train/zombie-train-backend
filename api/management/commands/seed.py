@@ -14,6 +14,7 @@ from user.models import GameUser
 from django.contrib.auth.models import Group, Permission
 
 from user.permissions import UserPermissions
+from zombie_train_backend.utils import get_codename
 
 MOCK_USERS = [
     'glangston0',
@@ -108,8 +109,8 @@ class Command(BaseCommand):
         if created:
             self.stdout.write(
                 self.style.SUCCESS('Successfully created Player group'))
-            player_permissions = Permission.objects.filter(name__in=[
-                ScorePermissions.ADD_SCORE,
+            player_permissions = Permission.objects.filter(codename__in=[
+                get_codename(ScorePermissions.ADD_SCORE),
             ])
             for player_permission in player_permissions:
                 player_group.permissions.add(player_permission)
@@ -124,12 +125,13 @@ class Command(BaseCommand):
             self.stdout.write(
                 self.style.SUCCESS('Successfully created Admin group'))
             self.groups[ADMIN_GROUP_NAME] = admin_group
-            admin_permissions = Permission.objects.filter(name__in=[
-                ScorePermissions.VIEW_SCORE,
-                UserPermissions.VIEW_USER,
-                UserPermissions.DELETE_USER,
-                UserPermissions.CHANGE_USER
-            ])
+            admin_permissions = Permission.objects.filter(codename__in=list(
+                get_codename(perm) for perm in [
+                    ScorePermissions.VIEW_SCORE,
+                    UserPermissions.VIEW_USER,
+                    UserPermissions.DELETE_USER,
+                    UserPermissions.CHANGE_USER
+                ]))
             for admin_permission in admin_permissions:
                 player_group.permissions.add(admin_permission)
         else:
