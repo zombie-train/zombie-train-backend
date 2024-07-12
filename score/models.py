@@ -1,3 +1,5 @@
+import sys
+
 from django.db import models
 from django.utils import timezone
 from django.utils.datetime_safe import date
@@ -45,3 +47,13 @@ class Leaderboard(models.Model):
                 f"- {self.region.name} "
                 f"- {self.score_dt} "
                 f"- {self.score.value}")
+
+
+class InfestationLevel(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100)
+    lower_bound = models.IntegerField(default=0)
+    upper_bound = models.IntegerField(default=sys.maxsize)
+
+    def __str__(self):
+        return f"{self.name} - {self.lower_bound} to {self.upper_bound}"

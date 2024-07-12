@@ -8,13 +8,21 @@ from django.utils import timezone
 from api.models import Region
 from api.permissions import PLAYER_GROUP_NAME, ADMIN_GROUP_NAME
 from api.utils import get_default_region
-from score.models import Score
+from score.models import Score, InfestationLevel
 from score.permissions import ScorePermissions
 from user.models import GameUser
 from django.contrib.auth.models import Group, Permission
 
 from user.permissions import UserPermissions
 from zombie_train_backend.utils import get_codename
+
+
+INFESTATION_LEVELS = [
+    {"name": "low", "lower_bound": 0, "upper_bound": 500},
+    {"name": "medium", "lower_bound": 501, "upper_bound": 1000},
+    {"name": "high", "lower_bound": 1001, "upper_bound": 9999999},
+]
+
 
 MOCK_USERS = [
     'glangston0',
@@ -101,7 +109,24 @@ class Command(BaseCommand):
         self.create_users()
         self.create_superuser()
         self.create_scores()
+        self.create_infestation_levels()
         self.stdout.write('Data seeded successfully.')
+
+    def create_infestation_levels(self):
+        objects = InfestationLevel.objects.all().count()
+        if objects == 0:
+            for level in INFESTATION_LEVELS:
+                InfestationLevel.objects.create(
+                    name=level['name'],
+                    lower_bound=level['lower_bound'],
+                    upper_bound=level['upper_bound']
+                )
+            self.stdout.write(
+                self.style.SUCCESS('Successfully created Infestation Levels'))
+        else:
+            self.stdout.write(
+                self.style.WARNING('Infestation Levels already exist'))
+
 
     def create_groups(self):
         player_group, created = Group.objects.get_or_create(
