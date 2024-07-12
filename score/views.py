@@ -80,7 +80,7 @@ class WorldMapView(APIView):
             ).first()
             data.append({
                 "region": region.name,
-                "zombie_killed": scores_dict.get(region.name, 0),
+                "zombies_left": scores_dict.get(region.name, 0),
                 "infestation_level": infestation_level.name  # Adjust as necessary
             })
 

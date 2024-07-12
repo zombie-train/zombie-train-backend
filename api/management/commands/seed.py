@@ -18,9 +18,9 @@ from zombie_train_backend.utils import get_codename
 
 
 INFESTATION_LEVELS = [
-    {"name": "low", "lower_bound": 0, "upper_bound": 500},
-    {"name": "medium", "lower_bound": 501, "upper_bound": 1000},
-    {"name": "high", "lower_bound": 1001, "upper_bound": 9999999},
+    {"name": "low", "lower_bound": 0, "upper_bound": 1000},
+    {"name": "medium", "lower_bound": 1001, "upper_bound": 1500},
+    {"name": "high", "lower_bound": 1501, "upper_bound": 9999999},
 ]
 
 
