@@ -1,10 +1,10 @@
 from django.db.models import Sum
+from django.utils import timezone
 from django.utils.dateparse import parse_date
 from rest_framework import generics, permissions
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
-from rest_framework.utils import timezone
 from rest_framework.views import APIView
 
 from api.models import Region
