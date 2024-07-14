@@ -3,7 +3,7 @@ version: '3.8'
 services:
   db:
     networks:
-      - app-network
+      - app_network
     image: postgres:13
     environment:
       POSTGRES_DB: ${DB_NAME}
@@ -16,7 +16,7 @@ services:
 
   web:
     networks:
-      - app-network
+      - app_network
     build: .
     volumes:
       - .:/app
@@ -33,7 +33,7 @@ services:
 
   nginx:
     networks:
-      - app-network
+      - app_network
     build:
       context: .
       dockerfile: Dockerfile.nginx
@@ -50,7 +50,7 @@ services:
       - ADMIN_EMAIL=${ADMIN_EMAIL}
 
 networks:
-  app-network:
+  app_network:
     driver: bridge
 
 volumes:
