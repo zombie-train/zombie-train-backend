@@ -14,7 +14,7 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
 # Run Django migration
-RUN python manage.py migrate
+RUN python /app/manage.py migrate
 
 # Copy SSL certificates
 COPY certs /certs
