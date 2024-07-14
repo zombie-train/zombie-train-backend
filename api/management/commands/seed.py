@@ -2,7 +2,7 @@ import os
 import random
 from datetime import timedelta
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
 from api.models import Region
@@ -100,17 +100,45 @@ REGIONS = [
 
 class Command(BaseCommand):
     help = 'Seed the database with initial data'
-    groups = dict()
 
-    def handle(self, *args, **kwargs):
+    def add_arguments(self, parser):
+        # Define command-line flags for each seeding operation
+        parser.add_argument('--regions', action='store_true', help='Seed regions')
+        parser.add_argument('--groups', action='store_true', help='Seed groups')
+        parser.add_argument('--users', action='store_true', help='Seed users')
+        parser.add_argument('--superuser', action='store_true', help='Create a superuser')
+        parser.add_argument('--scores', action='store_true', help='Seed scores')
+        parser.add_argument('--infestation_levels', action='store_true', help='Seed infestation levels')
+        parser.add_argument('--all', action='store_true', help='Seed all data')
+
+    def handle(self, *args, **options):
         self.stdout.write('Seeding data...')
+
+        if options['all']:
+            self.create_all()
+        else:
+            if options['regions']:
+                self.create_regions()
+            if options['groups']:
+                self.create_groups()
+            if options['users']:
+                self.create_users()
+            if options['superuser']:
+                self.create_superuser()
+            if options['scores']:
+                self.create_scores()
+            if options['infestation_levels']:
+                self.create_infestation_levels()
+
+        self.stdout.write('Data seeded successfully.')
+
+    def create_all(self):
         self.create_regions()
         self.create_groups()
         self.create_users()
         self.create_superuser()
         self.create_scores()
         self.create_infestation_levels()
-        self.stdout.write('Data seeded successfully.')
 
     def create_infestation_levels(self):
         objects = InfestationLevel.objects.all().count()
