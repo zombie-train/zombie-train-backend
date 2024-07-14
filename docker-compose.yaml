@@ -2,6 +2,8 @@ version: '3.8'
 
 services:
   db:
+    networks:
+      - app-network
     image: postgres:13
     environment:
       POSTGRES_DB: ${DB_NAME}
@@ -13,6 +15,8 @@ services:
       - "5432:5432"
 
   web:
+    networks:
+      - app-network
     build: .
     volumes:
       - .:/app
@@ -28,6 +32,8 @@ services:
              gunicorn --workers 3 --bind 0.0.0.0:8000 zombie_train_backend.wsgi:application"
 
   nginx:
+    networks:
+      - app-network
     build:
       context: .
       dockerfile: Dockerfile.nginx
@@ -42,6 +48,10 @@ services:
     environment:
       - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS}
       - ADMIN_EMAIL=${ADMIN_EMAIL}
+
+networks:
+  app-network:
+    driver: bridge
 
 volumes:
   postgres_data:
