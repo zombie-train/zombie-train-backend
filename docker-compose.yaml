@@ -1,15 +1,13 @@
 version: '3.7'
 
 services:
-
-  services:
-    officer:
-      image: funkyfuture/deck-chores:1
-      restart: unless-stopped
-      environment:
-        TIMEZONE: UTC
-      volumes:
-        - /var/run/docker.sock:/var/run/docker.sock
+  officer:
+    image: funkyfuture/deck-chores:1
+    restart: unless-stopped
+    environment:
+      TIMEZONE: UTC
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
   db:
     networks:
       - app_network
@@ -41,8 +39,8 @@ services:
              python manage.py migrate &&
              gunicorn --workers 3 --bind 0.0.0.0:8000 zombie_train_backend.wsgi:application"
     labels:
-      deck-chores.execute_new_day.command: sh -c "python /app/manage.py new_day"
-      deck-chores.execute_new_day.interval: "daily"
+      deck-chores.execute-new-day.command: sh -c "python /app/manage.py new_day"
+      deck-chores.execute-new-day.interval: "daily"
 
   nginx:
     networks:
