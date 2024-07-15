@@ -14,7 +14,7 @@ services:
     ports:
       - "5432:5432"
 
-  web:
+  backend:
     networks:
       - app_network
     build: .
@@ -45,7 +45,7 @@ services:
       - ./static:/app/static  # Bind mount for static files
       - ./certs:/etc/letsencrypt  # Bind mount for Let's Encrypt certificates
     depends_on:
-      - web
+      - backend
     environment:
       - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS}
       - ADMIN_EMAIL=${ADMIN_EMAIL}
