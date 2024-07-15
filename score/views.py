@@ -63,9 +63,9 @@ class WorldMapView(APIView):
         score_date = request.query_params.get('date', None)
         score_date = score_date or timezone.now().date()
         scores_per_region = Leaderboard.objects.filter(
-            score_ts__date=score_date
+            score_dt=score_date
         ).values('region__name').annotate(
-            zombie_killed=Sum('value')
+            zombie_killed=Sum('score__value')
         ).order_by('region__name')
 
         scores_dict = {score['region__name']: score['zombie_killed'] for score in scores_per_region}
