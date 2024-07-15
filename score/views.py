@@ -1,7 +1,7 @@
 from django.db.models import Sum
 from django.utils import timezone
 from django.utils.dateparse import parse_date
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, status
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -9,9 +9,16 @@ from rest_framework.views import APIView
 
 from api.models import Region
 from api.permissions import has_permission
-from score.models import Score, Leaderboard, InfestationLevel
+from score.models import Score, Leaderboard
+from infestation.models import Infestation
 from score.permissions import ScorePermissions
 from score.serializers import ScoreSerializer, LeaderboardSerializer
+
+INFESTATION_RANGES = [
+    {"name": "low", "lower_bound": 0, "upper_bound": 0.33},
+    {"name": "medium", "lower_bound": 0.34, "upper_bound": 0.66},
+    {"name": "high", "lower_bound": 0.67, "upper_bound": 1},
+]
 
 
 class ScoreListCreateView(generics.ListCreateAPIView):
@@ -47,12 +54,13 @@ class LeaderboardListView(generics.ListAPIView):
     def get_queryset(self):
         queryset = Leaderboard.objects.all().order_by('-score__value')
         score_dt = self.request.query_params.get('score_date', None)
-        score_dt = score_dt or timezone.now().date()
         if score_dt is not None:
             try:
                 parsed_date = parse_date(score_dt)
                 if parsed_date:
                     queryset = queryset.filter(score_dt=parsed_date)
+                else:
+                    queryset = queryset.filter(score_dt=timezone.now().date())
             except ValueError as e:
                 raise e  # Optionally, handle invalid date format
         return queryset
@@ -62,6 +70,13 @@ class LeaderboardListView(generics.ListAPIView):
 class WorldMapView(APIView):
     def get(self, request):
         score_date = request.query_params.get('date', None)
+        if score_date:
+            score_date = parse_date(score_date)
+            if not score_date:
+                return Response(
+                    {"error": "Invalid date format. Please use YYYY-MM-DD"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
         score_date = score_date or timezone.now().date()
         scores_per_region = Leaderboard.objects.filter(
             score_dt=score_date
@@ -70,19 +85,22 @@ class WorldMapView(APIView):
         ).order_by('region__name')
 
         scores_dict = {score['region__name']: score['zombie_killed'] for score in scores_per_region}
+        all_infestations = Infestation.objects.all()
 
-        all_regions = Region.objects.all().order_by('name')
-        all_infestation_levels = InfestationLevel.objects.all().order_by('name')
         data = []
-        for region in all_regions:
-            infestation_level = all_infestation_levels.filter(
-                lower_bound__lte=scores_dict.get(region.name, 0),
-                upper_bound__gte=scores_dict.get(region.name, 0)
-            ).first()
+        for infestation in all_infestations:
+            zombies_killed_total = scores_dict.get(infestation.region.name, 0)
+            zombies_left_total = max(0, infestation.start_zombies_count - zombies_killed_total)
+            zombies_left_percentage = zombies_left_total / infestation.start_zombies_count
+            infestation_level = next(filter(
+                lambda x: x['lower_bound'] <= zombies_left_percentage <= x['upper_bound'],
+                INFESTATION_RANGES
+            ), {'name': 'low'})
+
             data.append({
-                "region": region.name,
-                "zombies_left": scores_dict.get(region.name, 0),
-                "infestation_level": infestation_level.name  # Adjust as necessary
+                "region": infestation.region.name,
+                "zombies_left": zombies_left_total,
+                "infestation_level": infestation_level["name"]
             })
 
         return Response(data)

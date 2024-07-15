@@ -2,27 +2,22 @@ import os
 import random
 from datetime import timedelta
 
-from django.core.management.base import BaseCommand, CommandError
+from django.contrib.auth.models import Group, Permission
+from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from api.models import Region
 from api.permissions import PLAYER_GROUP_NAME, ADMIN_GROUP_NAME
 from api.utils import get_default_region
-from score.models import Score, InfestationLevel
+from infestation.models import Infestation
+from score.models import Score
 from score.permissions import ScorePermissions
 from user.models import GameUser
-from django.contrib.auth.models import Group, Permission
-
 from user.permissions import UserPermissions
 from zombie_train_backend.utils import get_codename
 
 
-INFESTATION_LEVELS = [
-    {"name": "low", "lower_bound": 0, "upper_bound": 1000},
-    {"name": "medium", "lower_bound": 1001, "upper_bound": 1500},
-    {"name": "high", "lower_bound": 1501, "upper_bound": 9999999},
-]
-
+INITIAL_ZOMBIES_COUNT_FOR_REGION = 1000
 
 MOCK_USERS = [
     'glangston0',
@@ -108,7 +103,6 @@ class Command(BaseCommand):
         parser.add_argument('--users', action='store_true', help='Seed users')
         parser.add_argument('--superuser', action='store_true', help='Create a superuser')
         parser.add_argument('--scores', action='store_true', help='Seed scores')
-        parser.add_argument('--infestation_levels', action='store_true', help='Seed infestation levels')
         parser.add_argument('--all', action='store_true', help='Seed all data')
 
     def handle(self, *args, **options):
@@ -127,8 +121,6 @@ class Command(BaseCommand):
                 self.create_superuser()
             if options['scores']:
                 self.create_scores()
-            if options['infestation_levels']:
-                self.create_infestation_levels()
 
         self.stdout.write('Data seeded successfully.')
 
@@ -138,23 +130,6 @@ class Command(BaseCommand):
         self.create_users()
         self.create_superuser()
         self.create_scores()
-        self.create_infestation_levels()
-
-    def create_infestation_levels(self):
-        objects = InfestationLevel.objects.all().count()
-        if objects == 0:
-            for level in INFESTATION_LEVELS:
-                InfestationLevel.objects.create(
-                    name=level['name'],
-                    lower_bound=level['lower_bound'],
-                    upper_bound=level['upper_bound']
-                )
-            self.stdout.write(
-                self.style.SUCCESS('Successfully created Infestation Levels'))
-        else:
-            self.stdout.write(
-                self.style.WARNING('Infestation Levels already exist'))
-
 
     def create_groups(self):
         player_group, created = Group.objects.get_or_create(
@@ -235,4 +210,5 @@ class Command(BaseCommand):
 
     def create_regions(self):
         for region in REGIONS:
-            Region.objects.create(name=region)
+            region, created = Region.objects.get_or_create(name=region)
+            Infestation.objects.get_or_create(region=region, start_zombies_count=INITIAL_ZOMBIES_COUNT_FOR_REGION)

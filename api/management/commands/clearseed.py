@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 
 from api.management.commands.seed import MOCK_USERS
 from api.models import Region
-from score.models import Score, InfestationLevel
+from score.models import Score
 from user.models import GameUser
 
 
@@ -22,9 +22,6 @@ class Command(BaseCommand):
         Score.objects.all().delete()
         self.stdout.write('All scores deleted.')
 
-    def clear_infestation_levels(self):
-        InfestationLevel.objects.all().delete()
-        self.stdout.write('All infestation levels deleted.')
     def clear_regions(self):
         Region.objects.all().delete()
         self.stdout.write('All regions deleted.')

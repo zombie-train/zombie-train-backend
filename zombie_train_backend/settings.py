@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'api',
     'user',
     'score',
+    'infestation',
 ]
 
 MIDDLEWARE = [
