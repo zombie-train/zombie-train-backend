@@ -47,6 +47,7 @@ class LeaderboardListView(generics.ListAPIView):
     def get_queryset(self):
         queryset = Leaderboard.objects.all().order_by('-score__value')
         score_dt = self.request.query_params.get('score_date', None)
+        score_dt = score_dt or timezone.now().date()
         if score_dt is not None:
             try:
                 parsed_date = parse_date(score_dt)
