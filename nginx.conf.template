@@ -2,7 +2,7 @@ server {
     listen 80;
     server_name www.${DJANGO_ALLOWED_HOSTS} ${DJANGO_ALLOWED_HOSTS};
 
-    location ~ ^/(static\/admin|admin|api|o)/ {
+    location ~ ^/(admin|api|o)/ {
         proxy_pass http://web:8000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -16,6 +16,10 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /static/admin/ {
+        alias /app/static/admin/;
     }
 }
 
@@ -27,7 +31,7 @@ server {
     ssl_certificate /etc/letsencrypt/live/${DJANGO_ALLOWED_HOSTS}/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/${DJANGO_ALLOWED_HOSTS}/privkey.pem;
 
-    location ~ ^/(static\/admin|admin|api|o)/ {
+    location ~ ^/(admin|api|o)/ {
         proxy_pass http://web:8000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -41,6 +45,10 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /static/admin/ {
+        alias /app/static/admin/ ;
     }
 
 }
