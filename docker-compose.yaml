@@ -1,5 +1,3 @@
-version: '3.7'
-
 services:
   officer:
     image: funkyfuture/deck-chores:1
