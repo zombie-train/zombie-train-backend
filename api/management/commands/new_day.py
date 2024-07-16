@@ -43,24 +43,32 @@ class Command(BaseCommand):
 
         for infestation in infestations:
             region_name = infestation.region.name
-            region_score = scores_per_region.get(region__name=region_name)
-            if region_score is None:
+            try:
+                region_score = scores_per_region.get(region__name=region_name)
+            except Leaderboard.DoesNotExist:
+                self.stdout.write(
+                    self.style.WARNING(
+                        f"{region_name} has no scores for today, skipping infestation update"
+                    ))
                 continue
-            if region_score["zombie_killed"] >= infestation.start_zombies_count:
+
+            initial_infestation = infestation.start_zombies_count
+            if region_score["zombie_killed"] >= initial_infestation:
                 infestation_complexity_increase = (
                         os.getenv("INFESTATION_COMPLEXITY_INCREASE", None)
                         or DEFAULT_INFESTATION_COMPLEXITY_INCREASE
                 )
                 infestation.start_zombies_count = int(
-                    infestation.start_zombies_count * (1 + float(infestation_complexity_increase)))
+                    initial_infestation * (1 + float(infestation_complexity_increase)))
                 infestation.save()
                 self.stdout.write(
                     self.style.SUCCESS(
-                        f"Successfully updated infestation for {region_name}: "
-                        f"from {region_score['zombie_killed']} to {infestation.start_zombies_count}"
+                        f"{region_name} (zombie killed {region_score['zombie_killed']}): updating infestation "
+                        f"from {initial_infestation} to {infestation.start_zombies_count}"
                     ))
             else:
                 self.stdout.write(
                     self.style.WARNING(
-                        f"Region {region_name} has not reached the required score to update the infestation"
+                        f"{region_name} (zombie killed {region_score['zombie_killed']}) has not reached the "
+                        f"required score to update the infestation {initial_infestation}"
                     ))
