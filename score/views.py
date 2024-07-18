@@ -59,10 +59,10 @@ class LeaderboardListView(generics.ListAPIView):
                 parsed_date = parse_date(score_dt)
                 if parsed_date:
                     queryset = queryset.filter(score_dt=parsed_date)
-                else:
-                    queryset = queryset.filter(score_dt=timezone.now().date())
             except ValueError as e:
                 raise e  # Optionally, handle invalid date format
+        else:
+            queryset = queryset.filter(score_dt=timezone.now().date())
         return queryset
 
 
