@@ -200,10 +200,14 @@ LOGGING = {
             "client": logging_client,
             "labels": {"env": ENV},
         },
+        "console": {
+            "level": "DEBUG",
+            "class": "logging.StreamHandler",
+        },
     },
     "loggers": {
         "django": {
-            "handlers": ["cloud"],
+            "handlers": ["cloud", "console"],
             "level": "INFO",
             "propagate": True,
         },

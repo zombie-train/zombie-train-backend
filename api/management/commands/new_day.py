@@ -25,10 +25,10 @@ class Command(BaseCommand):
     help = "Reset all necessary parameters for a new day"
 
     def handle(self, *args, **kwargs):
-        logger.info("Resetting all necessary parameters for a new day")
+        logger.warning("Resetting all necessary parameters for a new day")
         updated_count = GameUser.objects.update(current_region_score=None)
         self.reset_infestation()
-        logger.info(
+        logger.warning(
             self.style.SUCCESS(
                 f"Successfully reset current_region_score for {updated_count} users"
             )
@@ -52,7 +52,7 @@ class Command(BaseCommand):
             try:
                 region_score = scores_per_region.get(region__name=region_name)
             except Leaderboard.DoesNotExist:
-                logger.info(
+                logger.warning(
                     self.style.WARNING(
                         f"{region_name} has no scores for today, skipping infestation update"
                     )
@@ -69,14 +69,14 @@ class Command(BaseCommand):
                     initial_infestation * (1 + float(infestation_complexity_increase))
                 )
                 infestation.save()
-                logger.info(
+                logger.warning(
                     self.style.SUCCESS(
                         f"{region_name} (zombie killed {region_score['zombie_killed']}): updating infestation "
                         f"from {initial_infestation} to {infestation.start_zombies_count}"
                     )
                 )
             else:
-                logger.info(
+                logger.warning(
                     self.style.WARNING(
                         f"{region_name} (zombie killed {region_score['zombie_killed']}) has not reached the "
                         f"required score to update the infestation {initial_infestation}"

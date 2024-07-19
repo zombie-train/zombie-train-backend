@@ -32,10 +32,7 @@ services:
       - db
     env_file:
       - .env
-    command: >
-      sh -c "python manage.py collectstatic --noinput &&
-             python manage.py migrate &&
-             gunicorn --workers 3 --bind 0.0.0.0:8000 zombie_train_backend.wsgi:application"
+    command: sh /app/init.sh
     labels:
       deck-chores.execute-new-day.command: sh -c "python /app/manage.py new_day"
       deck-chores.execute-new-day.interval: "daily"

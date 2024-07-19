@@ -10,6 +10,8 @@ WORKDIR /app
 
 # Install dependencies
 COPY requirements.txt /app/
+COPY init.sh /app/init.sh
+RUN chmod +x /app/init.sh
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
@@ -18,3 +20,4 @@ COPY certs /certs
 
 # Expose the port the app runs on
 EXPOSE ${DJANGO_APP_PORT}
+
