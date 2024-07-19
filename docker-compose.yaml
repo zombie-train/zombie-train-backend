@@ -32,7 +32,7 @@ services:
       - db
     env_file:
       - .env
-    command: sh /app/init.sh
+    command: sh /app/init-django.sh
     labels:
       deck-chores.execute-new-day.command: sh -c "python /app/manage.py new_day"
       deck-chores.execute-new-day.interval: "daily"

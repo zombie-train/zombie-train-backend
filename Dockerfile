@@ -10,7 +10,7 @@ WORKDIR /app
 
 # Install dependencies
 COPY requirements.txt /app/
-COPY init.sh /app/init.sh
+COPY init-django.sh /app/init-django.sh
 RUN chmod +x /app/init.sh
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
