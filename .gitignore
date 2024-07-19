@@ -93,3 +93,5 @@ certs/*
 !certs/.gitkeep
 static/*
 !static/.gitkeep
+
+django-gcp-logger-key.json

@@ -6,8 +6,11 @@ from score.models import Leaderboard
 from user.models import GameUser
 from django.utils import timezone
 from django.db.models import Sum
+import logging
 
 load_dotenv()
+
+logger = logging.getLogger("django")
 
 DEFAULT_INFESTATION_COMPLEXITY_INCREASE = 0.1
 
@@ -22,9 +25,10 @@ class Command(BaseCommand):
     help = "Reset all necessary parameters for a new day"
 
     def handle(self, *args, **kwargs):
+        logger.info("Resetting all necessary parameters for a new day")
         updated_count = GameUser.objects.update(current_region_score=None)
         self.reset_infestation()
-        self.stdout.write(
+        logger.info(
             self.style.SUCCESS(
                 f"Successfully reset current_region_score for {updated_count} users"
             )
@@ -48,29 +52,33 @@ class Command(BaseCommand):
             try:
                 region_score = scores_per_region.get(region__name=region_name)
             except Leaderboard.DoesNotExist:
-                self.stdout.write(
+                logger.info(
                     self.style.WARNING(
                         f"{region_name} has no scores for today, skipping infestation update"
-                    ))
+                    )
+                )
                 continue
 
             initial_infestation = infestation.start_zombies_count
             if region_score["zombie_killed"] >= initial_infestation:
                 infestation_complexity_increase = (
-                        os.getenv("INFESTATION_COMPLEXITY_INCREASE", None)
-                        or DEFAULT_INFESTATION_COMPLEXITY_INCREASE
+                    os.getenv("INFESTATION_COMPLEXITY_INCREASE", None)
+                    or DEFAULT_INFESTATION_COMPLEXITY_INCREASE
                 )
                 infestation.start_zombies_count = int(
-                    initial_infestation * (1 + float(infestation_complexity_increase)))
+                    initial_infestation * (1 + float(infestation_complexity_increase))
+                )
                 infestation.save()
-                self.stdout.write(
+                logger.info(
                     self.style.SUCCESS(
                         f"{region_name} (zombie killed {region_score['zombie_killed']}): updating infestation "
                         f"from {initial_infestation} to {infestation.start_zombies_count}"
-                    ))
+                    )
+                )
             else:
-                self.stdout.write(
+                logger.info(
                     self.style.WARNING(
                         f"{region_name} (zombie killed {region_score['zombie_killed']}) has not reached the "
                         f"required score to update the infestation {initial_infestation}"
-                    ))
+                    )
+                )
