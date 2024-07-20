@@ -1,11 +1,4 @@
 services:
-  officer:
-    image: funkyfuture/deck-chores:1
-    restart: unless-stopped
-    environment:
-      TIMEZONE: UTC
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
   db:
     networks:
       - app_network
@@ -54,6 +47,14 @@ services:
     environment:
       - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS}
       - ADMIN_EMAIL=${ADMIN_EMAIL}
+
+  officer:
+    image: funkyfuture/deck-chores:1
+    restart: unless-stopped
+    environment:
+      TIMEZONE: UTC
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
 networks:
   app_network:
