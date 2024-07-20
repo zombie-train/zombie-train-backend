@@ -25,7 +25,6 @@ class Command(BaseCommand):
     help = "Reset all necessary parameters for a new day"
 
     def handle(self, *args, **kwargs):
-        logger.warning("Resetting all necessary parameters for a new day")
         updated_count = GameUser.objects.update(current_region_score=None)
         self.reset_infestation()
         logger.warning(
@@ -38,12 +37,15 @@ class Command(BaseCommand):
         today_date = timezone.now().date()
         # Workaround to make reset_infestation work for with the cron job
         yesterday_date = today_date - timezone.timedelta(days=1)
+        logger.warning(f"Resetting all necessary parameters for {yesterday_date}")
         scores_per_region = (
             Leaderboard.objects.filter(score_dt=yesterday_date)
             .values("region__name")
             .annotate(zombie_killed=Sum("score__value"))
             .order_by("region__name")
         )
+
+        logger.warning(f"Current scores per region: {scores_per_region}")
 
         infestations = Infestation.objects.all()
 
