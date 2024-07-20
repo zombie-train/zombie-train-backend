@@ -28,7 +28,7 @@ services:
     command: sh /app/init-django.sh
     labels:
       deck-chores.execute-new-day.command: sh -c "python /app/manage.py new_day"
-      deck-chores.execute-new-day.interval: "daily"
+      deck-chores.execute-new-day.interval: "* * * * * 0 0 0"
 
   nginx:
     networks:
@@ -62,3 +62,4 @@ networks:
 
 volumes:
   postgres_data:
+
