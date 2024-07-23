@@ -1,16 +1,18 @@
+from django.db.models import F, Window
 from django.db.models import Sum
+from django.db.models.functions import RowNumber
 from django.utils import timezone
 from django.utils.dateparse import parse_date
-from rest_framework import generics, permissions, status
+from rest_framework import generics, permissions
+from rest_framework import status
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from api.models import Region
 from api.permissions import has_permission
-from score.models import Score, Leaderboard
 from infestation.models import Infestation
+from score.models import Score, Leaderboard
 from score.permissions import ScorePermissions
 from score.serializers import ScoreSerializer, LeaderboardSerializer
 
@@ -118,3 +120,42 @@ class WorldMapView(APIView):
             })
 
         return Response(data)
+
+
+class SurroundingLeaderboardView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        score_dt = timezone.now().date()
+        user_id = self.request.user.id
+        try:
+            user_score = Leaderboard.objects.get(
+                user_id=user_id,
+                score_dt=score_dt,
+                region=self.request.user.current_region,
+            )
+            user_score_value = user_score.score.value
+        except Leaderboard.DoesNotExist:
+            user_score_value = 0
+
+        user_rank = Leaderboard.objects.filter(
+            score_dt=score_dt,
+            score__value__gte=user_score_value
+        ).count()
+
+        surrounding_scores = Leaderboard.objects.filter(
+            score_dt=score_dt
+        ).annotate(
+            position=Window(
+                expression=RowNumber(),
+                order_by=F('score__value').desc()
+            )
+        ).order_by('position')
+
+        start_rank = max(user_rank - 3, 0)
+        end_rank = max(user_rank, 2)
+
+        surrounding_scores = surrounding_scores[start_rank:end_rank]
+
+        serializer = LeaderboardSerializer(surrounding_scores, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
