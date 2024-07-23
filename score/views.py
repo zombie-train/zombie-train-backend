@@ -53,7 +53,7 @@ class LeaderboardListView(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = Leaderboard.objects.all().order_by('-score__value')
-        score_dt = self.request.query_params.get('score_date', None)
+        score_dt = self.request.query_params.get('date', None)
         if score_dt is not None:
             try:
                 parsed_date = parse_date(score_dt)
@@ -63,6 +63,20 @@ class LeaderboardListView(generics.ListAPIView):
                 raise e  # Optionally, handle invalid date format
         else:
             queryset = queryset.filter(score_dt=timezone.now().date())
+
+        limit = self.request.query_params.get('limit', None)
+        if limit is not None:
+            try:
+                limit = int(limit)
+                queryset = queryset[:limit]
+            except ValueError as e:
+                raise e  # Optionally, handle invalid limit format
+        queryset = queryset.annotate(
+            position=Window(
+                expression=RowNumber(),
+                order_by=F('score__value').desc()
+            )
+        )
         return queryset
 
 

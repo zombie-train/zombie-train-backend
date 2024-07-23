@@ -78,12 +78,15 @@ class LeaderboardSerializer(serializers.ModelSerializer):
     score_value = serializers.IntegerField(source='score.value',
                                            read_only=True)
     score_dt = serializers.SerializerMethodField()
+    position = serializers.IntegerField(read_only=True)
+
 
     class Meta:
         model = Leaderboard
         fields = ['user_id', 'user_name',
                   'region_id', 'region_name',
                   'score_id', 'score_value', 'score_dt',
+                  "position"
                   ]
 
     def get_score_dt(self, obj):
