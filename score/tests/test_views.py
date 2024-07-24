@@ -4,6 +4,8 @@ from django.utils import timezone
 from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework.test import APITestCase
+from oauth2_provider.models import AccessToken
+from datetime import timedelta
 
 from infestation.models import Infestation
 from score.models import Score, Region
@@ -110,3 +112,77 @@ class WorldMapViewTest(APITestCase):
         response = self.client.get(reverse("worldmap-view"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertTrue(len(response.data) == 1)
+
+
+class SurroundingLeaderboardViewTest(APITestCase):
+
+    def setUp(self):
+        self.client = APIClient()
+        self.region = Region.objects.create(name="Test Region")
+        self.users = [
+            GameUser.objects.create_user(username=f"testuser{i}", password="12345", current_region=self.region)
+            for i in range(4)
+        ]
+
+        self.scores = [
+            Score.objects.create(
+                user=self.users[i], region=self.region, value=(i + 1) * 100
+            ) for i in range(4)
+
+        ]
+
+        self.access_tokens = [
+            AccessToken.objects.create(
+                user=self.users[i],
+                token=f'testtoken{i}',
+                expires=timezone.now() + timedelta(days=1)
+            ) for i in range(4)
+        ]
+
+    def tearDown(self):
+        [user.delete() for user in self.users]
+        self.region.delete()
+        [score.delete() for score in self.scores]
+        [access_token.delete() for access_token in self.access_tokens]
+        self.client.logout()
+
+    def test_get_surrounding_leaderboard_unauthorized(self):
+        self.client.logout()
+        response = self.client.get(reverse("surrounding-leaderboard"))
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_surrounding_leaderboard_authorized0(self):
+        # Include the access token in the request headers
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_tokens[0].token)
+        response = self.client.get(reverse("surrounding-leaderboard"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue("position" in response.data[0])
+        self.assertTrue(len(response.data) == 3)
+        self.assertEqual(response.data[-1]["position"], 4)
+
+    def test_get_surrounding_leaderboard_authorized1(self):
+        # Include the access token in the request headers
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_tokens[1].token)
+        response = self.client.get(reverse("surrounding-leaderboard"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue("position" in response.data[0])
+        self.assertTrue(len(response.data) == 3)
+        self.assertEqual(response.data[-1]["position"], 3)
+
+    def test_get_surrounding_leaderboard_authorized2(self):
+        # Include the access token in the request headers
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_tokens[2].token)
+        response = self.client.get(reverse("surrounding-leaderboard"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue("position" in response.data[0])
+        self.assertTrue(len(response.data) == 3)
+        self.assertEqual(response.data[-1]["position"], 3)
+
+    def test_get_surrounding_leaderboard_authorized3(self):
+        # Include the access token in the request headers
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.access_tokens[3].token)
+        response = self.client.get(reverse("surrounding-leaderboard"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue("position" in response.data[0])
+        self.assertTrue(len(response.data) == 3)
+        self.assertEqual(response.data[-1]["position"], 3)

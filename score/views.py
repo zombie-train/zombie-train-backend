@@ -22,6 +22,7 @@ INFESTATION_RANGES = [
     {"name": "high", "lower_bound": 0.67, "upper_bound": 1},
 ]
 
+SURROUNDING_LEADERBOARD_LIMIT = 3
 
 class ScoreListCreateView(generics.ListCreateAPIView):
     serializer_class = ScoreSerializer
@@ -152,8 +153,8 @@ class SurroundingLeaderboardView(APIView):
             )
         ).order_by('position')
 
-        start_rank = max(user_rank - 3, 0)
-        end_rank = max(user_rank, 2)
+        start_rank = max(user_rank - SURROUNDING_LEADERBOARD_LIMIT, 0)
+        end_rank = max(user_rank, SURROUNDING_LEADERBOARD_LIMIT)
 
         surrounding_scores = surrounding_scores[start_rank:end_rank]
 
