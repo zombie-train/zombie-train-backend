@@ -25,8 +25,8 @@ class Command(BaseCommand):
     help = "Reset all necessary parameters for a new day"
 
     def handle(self, *args, **kwargs):
-        updated_count = GameUser.objects.update(current_region_score=None)
         self.reset_infestation()
+        updated_count = GameUser.objects.update(current_region_score=None)
         logger.warning(
             self.style.SUCCESS(
                 f"Successfully reset current_region_score for {updated_count} users"
