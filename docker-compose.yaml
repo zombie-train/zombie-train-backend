@@ -29,6 +29,8 @@ services:
     labels:
       deck-chores.execute-new-day.command: sh -c "python /app/manage.py new_day"
       deck-chores.execute-new-day.cron: "* * * * * 0 0 0"
+      deck-chores.execute-bot-scores.command: sh -c "python /app/manage.py new_day"
+      deck-chores.execute-bot-scores.cron: "* * * * * */3 59 59"
 
   nginx:
     networks:
