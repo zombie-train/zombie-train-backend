@@ -3,7 +3,7 @@ from django.db.models import Sum
 from django.db.models.functions import RowNumber
 from django.utils import timezone
 from django.utils.dateparse import parse_date
-from rest_framework import generics, permissions
+from rest_framework import generics
 from rest_framework import status
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -24,22 +24,21 @@ INFESTATION_RANGES = [
 
 SURROUNDING_LEADERBOARD_LIMIT = 3
 
+
 class ScoreListCreateView(generics.ListCreateAPIView):
     serializer_class = ScoreSerializer
 
     def get_permissions(self):
         permission_classes = [IsAuthenticated]
-        if self.request.method == 'POST':
-            permission_classes.append(
-                has_permission(ScorePermissions.ADD_SCORE))
-        elif self.request.method == 'GET':
-            permission_classes.append(
-                has_permission(ScorePermissions.VIEW_SCORE))
+        if self.request.method == "POST":
+            permission_classes.append(has_permission(ScorePermissions.ADD_SCORE))
+        elif self.request.method == "GET":
+            permission_classes.append(has_permission(ScorePermissions.VIEW_SCORE))
         return [permission() for permission in permission_classes]
 
     def get_queryset(self):
         queryset = Score.objects.all()
-        score_date = self.request.query_params.get('score_date', None)
+        score_date = self.request.query_params.get("score_date", None)
         if score_date is not None:
             try:
                 parsed_date = parse_date(score_date)
@@ -50,13 +49,12 @@ class ScoreListCreateView(generics.ListCreateAPIView):
         return queryset
 
 
-class LeaderboardListView(generics.ListAPIView):
-    serializer_class = LeaderboardSerializer
-    permission_classes = [permissions.AllowAny]
+@permission_classes([AllowAny])
+class LeaderboardListView(APIView):
 
-    def get_queryset(self):
-        queryset = Leaderboard.objects.all().order_by('-score__value')
-        score_dt = self.request.query_params.get('date', None)
+    def get(self, request):
+        queryset = Leaderboard.objects.all().order_by("-score__value")
+        score_dt = self.request.query_params.get("date", None)
         if score_dt is not None:
             try:
                 parsed_date = parse_date(score_dt)
@@ -67,7 +65,13 @@ class LeaderboardListView(generics.ListAPIView):
         else:
             queryset = queryset.filter(score_dt=timezone.now().date())
 
-        limit = self.request.query_params.get('limit', None)
+        queryset = (
+            queryset.values("user_id", user_name=F("user__username"))
+            .annotate(total_score=Sum("score__value"))
+            .order_by("-total_score")
+        )
+
+        limit = self.request.query_params.get("limit", None)
         if limit is not None:
             try:
                 limit = int(limit)
@@ -75,56 +79,67 @@ class LeaderboardListView(generics.ListAPIView):
             except ValueError as e:
                 raise e  # Optionally, handle invalid limit format
         queryset = queryset.annotate(
-            position=Window(
-                expression=RowNumber(),
-                order_by=F('score__value').desc()
-            )
+            position=Window(expression=RowNumber(), order_by=F("total_score").desc())
         )
-        return queryset
+        return Response(queryset)
 
 
 @permission_classes([AllowAny])
 class WorldMapView(APIView):
     def get(self, request):
-        score_date = request.query_params.get('date', None)
+        score_date = request.query_params.get("date", None)
         if score_date:
             score_date = parse_date(score_date)
             if not score_date:
                 return Response(
                     {"error": "Invalid date format. Please use YYYY-MM-DD"},
-                    status=status.HTTP_400_BAD_REQUEST
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
         score_date = score_date or timezone.now().date()
-        scores_per_region = Leaderboard.objects.filter(
-            score_dt=score_date
-        ).values('region__name').annotate(
-            zombie_killed=Sum('score__value')
-        ).order_by('region__name')
+        scores_per_region = (
+            Leaderboard.objects.filter(score_dt=score_date)
+            .values("region__name")
+            .annotate(zombie_killed=Sum("score__value"))
+            .order_by("region__name")
+        )
 
-        scores_dict = {score['region__name']: score['zombie_killed'] for score in scores_per_region}
+        scores_dict = {
+            score["region__name"]: score["zombie_killed"] for score in scores_per_region
+        }
         all_infestations = Infestation.objects.all()
 
         data = []
         for infestation in all_infestations:
             zombies_killed_total = scores_dict.get(infestation.region.name, 0)
-            zombies_left_total = max(0, infestation.start_zombies_count - zombies_killed_total)
-            zombies_left_percentage = zombies_left_total / infestation.start_zombies_count
-            infestation_level = next(filter(
-                lambda x: x['lower_bound'] <= zombies_left_percentage <= x['upper_bound'],
-                INFESTATION_RANGES
-            ), {'name': 'low'})
+            zombies_left_total = max(
+                0, infestation.start_zombies_count - zombies_killed_total
+            )
+            zombies_left_percentage = (
+                zombies_left_total / infestation.start_zombies_count
+            )
+            infestation_level = next(
+                filter(
+                    lambda x: x["lower_bound"]
+                    <= zombies_left_percentage
+                    <= x["upper_bound"],
+                    INFESTATION_RANGES,
+                ),
+                {"name": "low"},
+            )
 
-            data.append({
-                "region": infestation.region.name,
-                "zombies_left": zombies_left_total,
-                "infestation_level": infestation_level["name"]
-            })
+            data.append(
+                {
+                    "region": infestation.region.name,
+                    "zombies_left": zombies_left_total,
+                    "infestation_level": infestation_level["name"],
+                }
+            )
 
         return Response(data)
 
 
+@permission_classes([IsAuthenticated])
 class SurroundingLeaderboardView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         score_dt = timezone.now().date()
@@ -140,18 +155,18 @@ class SurroundingLeaderboardView(APIView):
             user_score_value = 0
 
         user_rank = Leaderboard.objects.filter(
-            score_dt=score_dt,
-            score__value__gte=user_score_value
+            score_dt=score_dt, score__value__gte=user_score_value
         ).count()
 
-        surrounding_scores = Leaderboard.objects.filter(
-            score_dt=score_dt
-        ).annotate(
-            position=Window(
-                expression=RowNumber(),
-                order_by=F('score__value').desc()
+        surrounding_scores = (
+            Leaderboard.objects.filter(score_dt=score_dt)
+            .annotate(
+                position=Window(
+                    expression=RowNumber(), order_by=F("score__value").desc()
+                )
             )
-        ).order_by('position')
+            .order_by("position")
+        )
 
         start_rank = max(user_rank - SURROUNDING_LEADERBOARD_LIMIT, 0)
         end_rank = max(user_rank, SURROUNDING_LEADERBOARD_LIMIT)

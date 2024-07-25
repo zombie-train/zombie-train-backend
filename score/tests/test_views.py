@@ -1,11 +1,13 @@
+from datetime import timedelta
+
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.datetime_safe import datetime
+from oauth2_provider.models import AccessToken
 from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework.test import APITestCase
-from oauth2_provider.models import AccessToken
-from datetime import timedelta
 
 from infestation.models import Infestation
 from score.models import Score, Region
@@ -43,23 +45,58 @@ class ScoreViewTest(TestCase):
         self.assertEqual(Score.objects.count(), 1)
 
 
-class LeaderboardAPITests(APITestCase):
+class LeaderboardListViewTest(APITestCase):
+
     def setUp(self):
         self.client = APIClient()
-        self.user = GameUser.objects.create_user(username="testuser", password="12345")
+        self.user1 = GameUser.objects.create_user(username="user1", password="12345")
+        self.user2 = GameUser.objects.create_user(username="user2", password="12345")
         self.region = Region.objects.create(name="Test Region")
-        self.score = Score.objects.create(user=self.user, region=self.region, value=100)
+        self.region2 = Region.objects.create(name="Test Region2")
+        self.score1 = Score.objects.create(user=self.user1, region=self.region, value=100)
+        self.score2 = Score.objects.create(user=self.user2, region=self.region, value=200)
+        self.score3 = Score.objects.create(user=self.user2, region=self.region2, value=150)
 
-    def test_get_leaderboard(self):
+    def tearDown(self):
+        self.user1.delete()
+        self.user2.delete()
+        self.region.delete()
+        self.region2.delete()
+        self.score1.delete()
+        self.score2.delete()
+        self.score3.delete()
+
+    def test_get_leaderboard_unauthorized(self):
         url = reverse("leaderboard-list")
         response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
 
-    def tearDown(self) -> None:
-        self.user.delete()
-        self.region.delete()
-        self.score.delete()
+    def test_get_leaderboard_data(self):
+        url = reverse("leaderboard-list")
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data[0]["user_name"], "user2")
+        self.assertEqual(response.data[0]["total_score"], 350)
+        self.assertEqual(response.data[0]["position"], 1)
+        self.assertEqual(response.data[1]["user_name"], "user1")
+        self.assertEqual(response.data[1]["total_score"], 100)
+        self.assertEqual(response.data[1]["position"], 2)
+
+    def test_get_leaderboard_filtered_by_date(self):
+        url = reverse("leaderboard-list")
+        response = self.client.get(url, {"date": timezone.now().date().isoformat()}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+        response = self.client.get(url, {"date": datetime(2024, 1, 1).date().isoformat()}, format="json")
+        self.assertEqual(len(response.data), 0)
+
+    def test_get_leaderboard_with_limit(self):
+        url = reverse("leaderboard-list")
+        response = self.client.get(url, {"limit": 1}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["user_name"], "user2")
 
 
 class WorldMapViewTest(APITestCase):
