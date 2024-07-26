@@ -14,7 +14,7 @@ from api.permissions import has_permission
 from infestation.models import Infestation
 from score.models import Score, Leaderboard
 from score.permissions import ScorePermissions
-from score.serializers import ScoreSerializer, LeaderboardSerializer
+from score.serializers import ScoreSerializer
 
 INFESTATION_RANGES = [
     {"name": "low", "lower_bound": 0, "upper_bound": 0.33},
@@ -81,7 +81,7 @@ class LeaderboardListView(APIView):
         queryset = queryset.annotate(
             position=Window(expression=RowNumber(), order_by=F("total_score").desc())
         )
-        return Response(queryset)
+        return Response(list(queryset), status=status.HTTP_200_OK)
 
 
 @permission_classes([AllowAny])
