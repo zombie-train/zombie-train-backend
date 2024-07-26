@@ -1,3 +1,4 @@
+from email.mime import base
 import logging
 import os
 import random
@@ -254,9 +255,20 @@ class Command(BaseCommand):
             current_user.current_region = random_region
             current_user.save()
 
+            current_user_scores = Score.objects.filter(
+                user=current_user,
+                score_ts__date=timezone.now().date(),
+            ).order_by("-score_ts")
+
+            base_score = BASE_BOT_SCORE
+
+            if current_user_scores.exists():
+                base_score = current_user_scores.first().value
+
+            new_score = base_score + random.randint(1, 100)
             Score.objects.create(
                 user=current_user,
-                value=BASE_BOT_SCORE + random.randint(1, 100),
+                value=new_score,
                 region=random_region,
                 score_ts=timezone.now()
                          - timedelta(
@@ -266,7 +278,7 @@ class Command(BaseCommand):
                     microseconds=random.randint(0, 999),
                 ),
             )
-            logger.warning("Created bot score for user: %s", current_user.username)
+            logger.warning("Created bot score for user: %s - %d", current_user.username, new_score)
 
     def create_users(self):
         usernames = MOCK_USERS

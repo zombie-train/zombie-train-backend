@@ -1,7 +1,7 @@
 import os
 import random
 import uuid
-
+from unittest.mock import patch, MagicMock
 from django.core.management import call_command
 from django.test import TestCase
 from django.utils import timezone
@@ -106,3 +106,74 @@ class CreateBotScoresTest(TestCase):
         users = GameUser.objects.filter(username__in=self.bot_usernames)
         scores = Score.objects.filter(user__in=users)
         self.assertEqual(len(scores), 3)
+    @patch('api.management.commands.seed.logger')
+    @patch('api.management.commands.seed.GameUser')
+    @patch('api.management.commands.seed.Region')
+    @patch('api.management.commands.seed.Score')
+    def test_create_bot_scores(self, mock_score, mock_region, mock_game_user, mock_logger):
+        # Setup mock data
+        mock_regions = [MagicMock(spec=Region) for _ in range(3)]
+        mock_region.objects.all.return_value = mock_regions
+
+        mock_users = [MagicMock(spec=GameUser) for _ in range(3)]
+        mock_game_user.objects.filter.return_value = mock_users
+
+        # Mock random choices
+        random.choice = MagicMock(side_effect=lambda x: x[0])
+        random.choices = MagicMock(return_value=mock_users[:3])
+
+        # Instantiate command and call create_bot_scores
+        command = Command()
+        command.create_bot_scores()
+
+        # Assertions
+        self.assertEqual(mock_game_user.objects.create_user.call_count, 0)
+        self.assertEqual(mock_score.objects.create.call_count, len(mock_users))
+
+        for user in mock_users:
+            user.save.assert_called()
+            self.assertTrue(user.current_region in mock_regions)
+
+        for call in mock_score.objects.create.call_args_list:
+            args, kwargs = call
+            self.assertIn('user', kwargs)
+            self.assertIn('value', kwargs)
+            self.assertIn('region', kwargs)
+            self.assertIn('score_ts', kwargs)
+            # self.assertTrue(kwargs['value'] > 0)
+            self.assertTrue(kwargs['region'] in mock_regions)
+            self.assertTrue(kwargs['score_ts'] <= timezone.now())
+
+        mock_logger.warning.assert_called()
+
+    @patch('api.management.commands.seed.logger')
+    @patch('api.management.commands.seed.GameUser')
+    @patch('api.management.commands.seed.Region')
+    @patch('api.management.commands.seed.Score')
+    def test_create_bot_scores_no_existing_users(self, mock_score, mock_region, mock_game_user, mock_logger):
+        # Setup mock data
+        mock_regions = [MagicMock(spec=Region) for _ in range(3)]
+        mock_region.objects.all.return_value = mock_regions
+
+        mock_game_user.objects.filter.return_value = []
+
+        # Mock random choices
+        random.choice = MagicMock(side_effect=lambda x: x[0])
+        random.choices = MagicMock(return_value=[])
+
+        # Instantiate command and call create_bot_scores
+        command = Command()
+        command.create_bot_scores()
+
+        # Assertions
+        self.assertEqual(mock_game_user.objects.create_user.call_count, len(BOT_USERS))
+        self.assertEqual(mock_score.objects.create.call_count, 0)
+
+        for call in mock_game_user.objects.create_user.call_args_list:
+            args, kwargs = call
+            self.assertIn('username', kwargs)
+            self.assertIn('current_region', kwargs)
+            self.assertIn('password', kwargs)
+            self.assertTrue(kwargs['current_region'] in mock_regions)
+
+        mock_logger.warning.assert_called()
