@@ -144,34 +144,33 @@ class SurroundingLeaderboardView(APIView):
     def get(self, request):
         score_dt = timezone.now().date()
         user_id = self.request.user.id
+        queryset = (
+            Leaderboard.objects.filter(score_dt=score_dt)
+            .values("user_id", user_name=F("user__username"))
+            .annotate(
+                total_score=Sum("score__value"),
+                score_dt=F("score_dt"),
+            )
+            .order_by("-total_score")
+        )
         try:
-            user_score = Leaderboard.objects.get(
+            user_score = queryset.get(
                 user_id=user_id,
                 score_dt=score_dt,
-                region=self.request.user.current_region,
             )
-            user_score_value = user_score.score.value
+            user_score_value = user_score["total_score"]
         except Leaderboard.DoesNotExist:
             user_score_value = 0
 
-        user_rank = Leaderboard.objects.filter(
-            score_dt=score_dt, score__value__gte=user_score_value
-        ).count()
+        user_rank = queryset.filter(total_score__gte=user_score_value).count()
 
-        surrounding_scores = (
-            Leaderboard.objects.filter(score_dt=score_dt)
-            .annotate(
-                position=Window(
-                    expression=RowNumber(), order_by=F("score__value").desc()
-                )
-            )
-            .order_by("position")
-        )
+        surrounding_scores = queryset.annotate(
+            position=Window(expression=RowNumber(), order_by=F("total_score").desc())
+        ).order_by("position")
 
         start_rank = max(user_rank - SURROUNDING_LEADERBOARD_LIMIT, 0)
         end_rank = max(user_rank, SURROUNDING_LEADERBOARD_LIMIT)
 
         surrounding_scores = surrounding_scores[start_rank:end_rank]
 
-        serializer = LeaderboardSerializer(surrounding_scores, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(list(surrounding_scores), status=status.HTTP_200_OK)
