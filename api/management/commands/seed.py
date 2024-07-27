@@ -147,7 +147,7 @@ class Command(BaseCommand):
             "--superuser", action="store_true", help="Create a superuser"
         )
         parser.add_argument("--scores", action="store_true", help="Seed scores")
-        parser.add_argument("--bot_scores", action="store_true", help="Seed bot scores")
+        parser.add_argument("--bot-scores", action="store_true", help="Seed bot scores")
         parser.add_argument("--all", action="store_true", help="Seed all data")
 
     def handle(self, *args, **options):
@@ -166,7 +166,7 @@ class Command(BaseCommand):
                 self.create_superuser()
             if options["scores"]:
                 self.create_scores()
-            if options["bot_scores"]:
+            if options["bot-scores"]:
                 self.create_bot_scores()
 
         self.stdout.write("Data seeded successfully.")
