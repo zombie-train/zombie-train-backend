@@ -166,7 +166,7 @@ class Command(BaseCommand):
                 self.create_superuser()
             if options["scores"]:
                 self.create_scores()
-            if options["bot-scores"]:
+            if options["bot_scores"]:
                 self.create_bot_scores()
 
         self.stdout.write("Data seeded successfully.")
