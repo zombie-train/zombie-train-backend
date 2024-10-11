@@ -191,13 +191,13 @@ class Command(BaseCommand):
                 player_group.permissions.add(player_permission)
         else:
             self.stdout.write(self.style.WARNING("Player group already exists"))
-        self.groups[PLAYER_GROUP_NAME] = player_group
+        # self.groups[PLAYER_GROUP_NAME] = player_group
 
         admin_group, created = Group.objects.get_or_create(name=ADMIN_GROUP_NAME)
 
         if created:
             self.stdout.write(self.style.SUCCESS("Successfully created Admin group"))
-            self.groups[ADMIN_GROUP_NAME] = admin_group
+            # self.groups[ADMIN_GROUP_NAME] = admin_group
             admin_permissions = Permission.objects.filter(
                 codename__in=list(
                     get_codename(perm)
@@ -223,6 +223,7 @@ class Command(BaseCommand):
                 username=admin_username,
                 email="admin@example.com",
                 password=admin_password,
+                is_staff=True,
                 first_name="Admin",
                 last_name="User",
             )

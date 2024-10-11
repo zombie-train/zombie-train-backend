@@ -23,7 +23,9 @@ services:
   backend:
     networks:
       - app_network
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
     volumes:
       - .:/app
       - ./static:/app/static  # Bind mount for static files
