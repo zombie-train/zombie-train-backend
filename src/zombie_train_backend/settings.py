@@ -182,24 +182,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "user.GameUser"
 
-# Create a Cloud Logging client
-logging_client = LoggingClient(
-    project=os.getenv("GOOGLE_CLOUD_PROJECT_ID", "zombie-train"),
-    credentials=service_account.Credentials.from_service_account_file(
-        os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-    ),
-)
-
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "handlers": {
-        "cloud": {
-            "level": "INFO",
-            "class": "google.cloud.logging.handlers.CloudLoggingHandler",
-            "client": logging_client,
-            "labels": {"env": ENV},
-        },
         "console": {
             "level": "DEBUG",
             "class": "logging.StreamHandler",
@@ -207,7 +193,7 @@ LOGGING = {
     },
     "loggers": {
         "django": {
-            "handlers": ["cloud", "console"],
+            "handlers": ["console"],
             "level": "INFO",
             "propagate": True,
         },
