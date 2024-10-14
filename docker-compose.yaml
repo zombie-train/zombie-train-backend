@@ -25,12 +25,12 @@ services:
       - app_network
     build:
       context: .
-      dockerfile: Dockerfile.dev
-    volumes:
-      - .:/app
-      - ./static:/app/static  # Bind mount for static files
-    expose:
-      - "8000"
+      dockerfile: Dockerfile.prod
+    # volumes:
+    #   - .:/app
+    #   - ./static:/app/static  # Bind mount for static files
+    ports:
+      - 8000:8000
     depends_on:
       - db
     env_file:
@@ -62,14 +62,14 @@ services:
       - ADMIN_EMAIL=${ADMIN_EMAIL}
     logging: *default-logging
 
-  officer:
-    image: funkyfuture/deck-chores:1
-    restart: unless-stopped
-    environment:
-      TIMEZONE: UTC
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
-    logging: *default-logging
+  # officer:
+  #   image: funkyfuture/deck-chores:1
+  #   restart: unless-stopped
+  #   environment:
+  #     TIMEZONE: UTC
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock
+  #   logging: *default-logging
 
 networks:
   app_network:
