@@ -94,4 +94,19 @@ certs/*
 static/*
 !static/.gitkeep
 
+### Django ###
+src/*.log
+src/*.pot
+src/*.pyc
+src/__pycache__/
+src/local_settings.py
+
+.env
+src/db.sqlite3
+
+src/certs/*
+!src/certs/.gitkeep
+src/static/*
+!src/static/.gitkeep
+
 django-gcp-logger-key.json
