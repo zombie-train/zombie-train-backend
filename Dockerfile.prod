@@ -8,15 +8,14 @@ ENV PYTHONUNBUFFERED=1
 # Set the working directory
 WORKDIR /app
 
-# Install dependencies
-COPY src/* /app/
-COPY requirements.txt init-django.sh manage.py /app/
+# Copy the source code
+COPY src/. /app/
+COPY requirements.txt init-django.sh /app/
 RUN chmod +x /app/init-django.sh
+
+# Install dependencies
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
-
-# Copy SSL certificates
-COPY certs /certs
 
 # Expose the port the app runs on
 EXPOSE ${DJANGO_APP_PORT}
