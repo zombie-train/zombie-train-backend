@@ -18,11 +18,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterField(
             model_name='score',
-            name='id',
-            field=models.UUIDField(primary_key=True, serialize=False),
-        ),
-        migrations.AlterField(
-            model_name='score',
             name='points',
             field=models.IntegerField(default=0),
         ),
