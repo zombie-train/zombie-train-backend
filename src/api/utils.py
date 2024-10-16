@@ -1,7 +1,7 @@
 import logging
 
 from django.db import OperationalError
-
+from django.db.utils import ProgrammingError
 from api.models import Region
 
 logger = logging.getLogger(__name__)
@@ -12,5 +12,7 @@ def get_default_region():
     try:
         default_region = Region.objects.first() if Region.objects.exists() else None
     except OperationalError as e:
+        logger.warning(str(e))
+    except ProgrammingError as e:
         logger.warning(str(e))
     return default_region
