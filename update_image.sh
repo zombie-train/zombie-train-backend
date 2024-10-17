@@ -2,16 +2,18 @@
 
 container_registry="zombietrain.azurecr.io"
 name="zombie-train-backend"
-version="latest"
+version="v1.0"
+
+
+# Set up buildx
+docker buildx create --name mybuilder --use
 
 # Build the Docker image
-docker build -t $container_registry/$name:$version . -f Dockerfile.prod
+docker buildx build --platform linux/amd64,linux/arm64 -t $container_registry/$name:$version --output type=docker . -f Dockerfile.prod
 
 # Check if the push flag is set
 if [ "$1" = "--push" ]; then
     echo "Pushing the image to the registry..."
-    # if not logged in, log in
-    
     az login
     az acr login --name $container_registry
     docker push $container_registry/$name:$version
