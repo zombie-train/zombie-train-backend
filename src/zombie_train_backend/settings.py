@@ -31,11 +31,13 @@ ENV = os.getenv("ENV", "default")
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv("DJANGO_DEBUG")
+DEBUG = os.getenv("DJANGO_DEBUG") == "true"
 
 ALLOWED_HOSTS = [
-    *os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1").split(","),
-    *["www." + host for host in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1").split(",")],
+    # TODO: remove this after testing
+    # *os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1").split(","),
+    # *["www." + host for host in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1").split(",")],
+    "*"
 ]
 
 CSRF_TRUSTED_ORIGINS = [
