@@ -7,6 +7,12 @@ from zombie_train_backend import settings
 
 
 class Score(models.Model):
+    class Meta:
+        indexes = [
+            # This composite index can replace the individual 'value' index
+            # since it's more specific and can be used for both purposes
+            models.Index(fields=['-value', 'score_ts']),
+        ]
     id = models.AutoField(primary_key=True)
     value = models.IntegerField(default=0)
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
@@ -25,6 +31,8 @@ class Score(models.Model):
 
 
 class Leaderboard(models.Model):
+    class Meta:
+        unique_together = ('user', 'region', 'score_dt')
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE,
                              related_name='leaderboard_entries')
@@ -37,8 +45,6 @@ class Leaderboard(models.Model):
 
     score_dt = models.DateField(default=date.today)
 
-    class Meta:
-        unique_together = ('user', 'region', 'score_dt')
 
     def __str__(self):
         return (f"{self.user.username} "
