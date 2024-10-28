@@ -33,3 +33,9 @@ urlpatterns = [
     path('o/', include((oauth2_endpoint_views, 'oauth2_provider'), namespace="oauth2_provider")),
     path('api/', include('api.urls')),
 ]
+
+if settings.DEBUG:
+    try:
+        urlpatterns += [path('silk/', include('silk.urls', namespace='silk'))]
+    except ImportError:
+        pass
