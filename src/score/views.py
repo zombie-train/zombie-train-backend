@@ -106,16 +106,16 @@ class WorldMapView(APIView):
         scores_dict = {
             score["region__name"]: score["zombie_killed"] for score in scores_per_region
         }
-        all_infestations = Infestation.objects.all()
+        all_infestations = Infestation.objects.values_list("region__name", "start_zombies_count")
 
         data = []
-        for infestation in all_infestations:
-            zombies_killed_total = scores_dict.get(infestation.region.name, 0)
+        for region_name, start_zombies_count in all_infestations:
+            zombies_killed_total = scores_dict.get(region_name, 0)
             zombies_left_total = max(
-                0, infestation.start_zombies_count - zombies_killed_total
+                0, start_zombies_count - zombies_killed_total
             )
             zombies_left_percentage = (
-                zombies_left_total / infestation.start_zombies_count
+                zombies_left_total / start_zombies_count
             )
             infestation_level = next(
                 filter(
@@ -129,7 +129,7 @@ class WorldMapView(APIView):
 
             data.append(
                 {
-                    "region": infestation.region.name,
+                    "region": region_name,
                     "zombies_left": zombies_left_total,
                     "infestation_level": infestation_level["name"],
                 }
