@@ -90,6 +90,13 @@ LOGGING = {
     },
 }
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
+
 if DEBUG:
     INSTALLED_APPS += ['silk']
     MIDDLEWARE.insert(0, 'silk.middleware.SilkyMiddleware',)
