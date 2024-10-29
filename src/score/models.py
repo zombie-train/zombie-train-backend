@@ -13,6 +13,7 @@ class Score(models.Model):
             # since it's more specific and can be used for both purposes
             models.Index(fields=['-value', 'score_ts']),
         ]
+
     id = models.AutoField(primary_key=True)
     value = models.IntegerField(default=0)
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
@@ -33,6 +34,7 @@ class Score(models.Model):
 class Leaderboard(models.Model):
     class Meta:
         unique_together = ('user', 'region', 'score_dt')
+
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE,
                              related_name='leaderboard_entries')
@@ -51,5 +53,3 @@ class Leaderboard(models.Model):
                 f"- {self.region.name} "
                 f"- {self.score_dt} "
                 f"- {self.score.value}")
-
-
