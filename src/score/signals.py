@@ -15,14 +15,14 @@ def update_leaderboard(sender, instance, created, **kwargs):
     if not created:
         return
     user = instance.user
-    region = instance.region
+    region_id = instance.region_id
     score_dt = instance.score_ts.date()
     score = instance
 
     # Check if a leaderboard entry already exists for this user, region, and date
     Leaderboard.objects.update_or_create(
         user=user,
-        region=region,
+        region_id=region_id,
         score_dt=score_dt,
         defaults={'score': score}
     )
@@ -36,13 +36,13 @@ def update_current_region_score(sender, instance, created, **kwargs):
         return
 
     user = instance.user
-    region = instance.region
+    region_id = instance.region_id
 
     # check if user current region is the same as score's region
 
-    if user.current_region and user.current_region.id != region.id:
+    if user.current_region_id != region_id:
         user.is_suspicious = True
-        user.current_region = region
+        user.current_region_id = region_id
         logger.warning(
             f'User {instance.user.username} marked as suspicious due to no leaderboard entry for region {user.current_region.id}.')
     user.current_region_score = instance
