@@ -1,9 +1,8 @@
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from django.utils.decorators import method_decorator
+from rest_framework.permissions import AllowAny
 from api.models import Region
 from api.serializers import RegionSerializer
-from django.views.decorators.cache import cache_page
+from django.core.cache import cache
 
 from django.utils import timezone
 from rest_framework.views import APIView
@@ -12,15 +11,21 @@ import time
 
 
 class RegionViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Region.objects.all()
     serializer_class = RegionSerializer
     permission_classes = [AllowAny]
 
-    @method_decorator(cache_page(60 * 60 * 2))
+
+    def get_queryset(self):
+        regions = cache.get('all_regions')
+        if regions is None:
+            regions = Region.objects.all()
+            cache.set('all_regions', regions, timeout=60 * 60 * 2)  # 2 hours
+
+        return regions
+
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
 
-    @method_decorator(cache_page(60 * 60 * 2))
     def retrieve(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 
