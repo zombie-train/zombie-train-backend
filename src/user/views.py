@@ -16,13 +16,20 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
 
     def get_permissions(self):
-        # Allow to create a profile to everyone
+        permission_classes = [IsAuthenticated,
+                              has_permission(UserPermissions.VIEW_USER),
+                              has_permission(UserPermissions.CHANGE_USER),
+                              has_permission(UserPermissions.DELETE_USER)]
         if self.request.method == 'POST':
             permission_classes = [permissions.AllowAny]
-        else:
+        elif self.request.method == 'GET':
             permission_classes = [IsAuthenticated,
-                                  has_permission(UserPermissions.VIEW_USER),
-                                  has_permission(UserPermissions.CHANGE_USER),
+                                  has_permission(UserPermissions.VIEW_USER)]
+        elif self.request.method == 'PUT':
+            permission_classes = [IsAuthenticated,
+                                  has_permission(UserPermissions.CHANGE_USER)]
+        elif self.request.method == 'DELETE':
+            permission_classes = [IsAuthenticated,
                                   has_permission(UserPermissions.DELETE_USER)]
         return [permission() for permission in permission_classes]
 
