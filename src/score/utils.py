@@ -1,29 +1,16 @@
 import os
 
-import environ
-from cryptography.fernet import Fernet
-
-from zombie_train_backend.settings import BASE_DIR
-
-env = environ.Env(
-    # Set casting, default value
-    DEBUG=(bool, False)
-)
-
-environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
-HASH_SCORE_KEY = env("HASH_SCORE_KEY")
-SALTY_COEFFICIENT = int(env("SALTY_COEFFICIENT"))
-MAX_KILLED_ZOMBIES_PER_MINUTE = int(env("MAX_KILLED_ZOMBIES_PER_MINUTE"))
-cipher_suite = Fernet(HASH_SCORE_KEY)
+from zombie_train_backend import settings
+from dotenv import load_dotenv
 
 
-def unhash_value(hashed_value):
-    byte_hashed_value = hashed_value.encode('utf-8')
-    try:
-        decrypted_value = cipher_suite.decrypt(byte_hashed_value)
-        return int(decrypted_value.decode('utf-8'))
-    except Exception as e:
-        raise ValueError("Invalid hashed value")
+load_dotenv()
+
+env = settings.ENV
+
+HASH_SCORE_KEY = os.getenv("HASH_SCORE_KEY")
+SALTY_COEFFICIENT = int(os.getenv("SALTY_COEFFICIENT"))
+MAX_KILLED_ZOMBIES_PER_MINUTE = int(os.getenv("MAX_KILLED_ZOMBIES_PER_MINUTE"))
 
 
 def unsalt_value(salted_value):

@@ -26,4 +26,5 @@ router.register(r'users', views.UserViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('profile/', views.UserProfileView.as_view(), name='user-profile'),
+    path('profile/save/', views.UserSaveView.as_view(), name='user-save'),
 ]

@@ -2,8 +2,8 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from score.models import Score, Leaderboard
-from score.utils import unhash_value, unsalt_value, MAX_KILLED_ZOMBIES_PER_MINUTE
-
+from score.utils import unsalt_value, MAX_KILLED_ZOMBIES_PER_MINUTE
+from api.utils import unhash_value
 
 class ScoreSerializer(serializers.ModelSerializer):
     user_id = serializers.PrimaryKeyRelatedField(
@@ -42,7 +42,7 @@ class ScoreSerializer(serializers.ModelSerializer):
 
     def validate_hashed_value(self, value):
         try:
-            unhashed_value = unhash_value(value)
+            unhashed_value = int(unhash_value(value))
             unsalted_value = unsalt_value(unhashed_value)
 
             # Ensure unsalted value is non-negative

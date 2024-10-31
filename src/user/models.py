@@ -21,6 +21,7 @@ class GameUser(AbstractUser):
     is_banned = models.BooleanField(default=False)
     is_cheater = models.BooleanField(default=False)
     is_suspicious = models.BooleanField(default=False)
+    current_save = models.TextField(default="")
 
     def __str__(self):
         return self.username

@@ -76,3 +76,12 @@ class UserSerializer(serializers.ModelSerializer):
             user.set_password(password)
             user.save()
         return user
+
+
+class UserSaveSerializer(serializers.ModelSerializer):
+    new_save = serializers.CharField(max_length=255, write_only=True)
+    current_save = serializers.CharField(max_length=255, read_only=True)
+    
+    class Meta:
+        model = GameUser
+        fields = ['new_save', 'current_save']

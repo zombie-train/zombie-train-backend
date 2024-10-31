@@ -14,7 +14,7 @@ class UserSerializerTest(TestCase):
         self.region = Region.objects.create(name='Test Region')
         self.region2 = Region.objects.create(name='Test Region2')
         self.score = Score.objects.create(user=self.user, region=self.region, value=100)
-        self.leaderboard_entry = Leaderboard.objects.create(user=self.user, region=self.region, score=self.score,
+        self.leaderboard_entry = Leaderboard.objects.get_or_create(user=self.user, region=self.region, score=self.score,
                                                             score_dt=timezone.now().date())
         self.serializer = UserSerializer(instance=self.user)
 
@@ -23,14 +23,14 @@ class UserSerializerTest(TestCase):
         self.region.delete()
         self.region2.delete()
         self.score.delete()
-        self.leaderboard_entry.delete()
+
 
     def test_contains_expected_fields(self):
         data = self.serializer.data
         self.assertCountEqual(data.keys(), [
             'id', 'username', 'current_region_id', 'current_region_name',
             'current_region_score_id', 'current_region_score_value', 'is_banned',
-            'is_cheater', 'is_suspicious', 'password', 'date_joined'
+            'is_cheater', 'is_suspicious', 'date_joined'
         ])
 
     def test_serialization(self):
@@ -54,7 +54,7 @@ class UserSerializerTest(TestCase):
         self.assertIsNone(updated_user.current_region_score)
 
         new_score = Score.objects.create(user=self.user, region=self.region2, value=200)
-        Leaderboard.objects.create(user=self.user, region=self.region2, score=new_score, score_dt=timezone.now().date())
+        Leaderboard.objects.get_or_create(user=self.user, region=self.region2, score=new_score, score_dt=timezone.now().date())
 
         serializer = UserSerializer(instance=self.user, data=data, partial=True)
         self.assertTrue(serializer.is_valid())
