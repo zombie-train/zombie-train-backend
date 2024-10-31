@@ -14,17 +14,18 @@ logger = logging.getLogger(__name__)
 def update_leaderboard(sender, instance, created, **kwargs):
     if not created:
         return
-    user = instance.user
-    region_id = instance.region_id
-    score_dt = instance.score_ts.date()
-    score = instance
-
-    # Check if a leaderboard entry already exists for this user, region, and date
-    Leaderboard.objects.update_or_create(
-        user=user,
-        region_id=region_id,
-        score_dt=score_dt,
-        defaults={'score': score}
+    
+    Leaderboard.objects.bulk_create([
+            Leaderboard(
+                user_id=instance.user_id,
+                region_id=instance.region_id,
+                score_id=instance.id,
+                score_dt=instance.score_ts.date()
+            )
+        ], 
+        update_conflicts=True,
+        unique_fields=['user_id', 'region_id', 'score_dt'],
+        update_fields=['score_id']
     )
 
 

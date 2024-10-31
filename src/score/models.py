@@ -33,7 +33,12 @@ class Score(models.Model):
 
 class Leaderboard(models.Model):
     class Meta:
-        unique_together = ('user', 'region', 'score_dt')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user_id', 'region_id', 'score_dt'],
+                name='unique_user_region_date'
+            )
+        ]
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL,
                              on_delete=models.CASCADE,
