@@ -63,9 +63,11 @@ class UserSaveView(generics.RetrieveUpdateAPIView):
         if not save:
             return Response({"error": "new_save is required"}, status=400)
         try:
-            unhashed_value = unhash_value(save)
+            # TODO: Add validation for save
+            pass
+            # unhashed_value = unhash_value(save)
             # asserting that current save is json
-            json_data = json.loads(unhashed_value)
+            # json_data = json.loads(unhashed_value)
         except Exception as e:
             # Log for debugging
             logger.error(f"Invalid save: {e}")
