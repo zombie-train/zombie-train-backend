@@ -55,8 +55,3 @@ class CurrentTimeView(APIView):
         return Response(response_data)
 
 
-class TimeView(APIView):
-    permission_classes = [AllowAny]
-
-    def get(self, request):
-        return Response({"tick": int(timezone.now().timestamp())})
