@@ -53,3 +53,10 @@ class CurrentTimeView(APIView):
             "week_number": now.isocalendar()[1]
         }
         return Response(response_data)
+
+
+class TimeView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return Response({"tick": int(timezone.now().timestamp())})

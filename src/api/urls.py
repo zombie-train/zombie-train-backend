@@ -23,6 +23,7 @@ from rest_framework import permissions
 from api import views
 from score.urls import urlpatterns as score_urlpatterns
 from user.urls import urlpatterns as user_urlpatterns
+from invoice.urls import urlpatterns as invoice_urlpatterns
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -40,6 +41,7 @@ schema_view = get_schema_view(
 
 urlpatterns = [
     path("current-time/", views.CurrentTimeView.as_view(), name="current-time"),
+    path("time/", views.TimeView.as_view(), name="time"),
     path("regions/", views.RegionViewSet.as_view(({"get": "list"}))),
     path(
         "swagger<format>/", schema_view.without_ui(cache_timeout=0), name="schema-json"
