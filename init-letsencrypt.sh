@@ -5,8 +5,8 @@ if ! [ -x "$(command -v certbot)" ]; then
   exit 1
 fi
 
-domain=$DJANGO_ALLOWED_HOSTS
-email=$ADMIN_EMAIL # Adding a valid address is strongly recommended
+domain=zombietra.in
+email=sheliutsin.aliaksandr@gmail.com # Adding a valid address is strongly recommended
 rsa_key_size=4096
 data_path="/etc/letsencrypt"
 nginx_conf="/etc/nginx/conf.d/default.conf"
