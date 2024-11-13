@@ -11,3 +11,4 @@ psycopg2-binary==2.9.7
 google-cloud-logging==3.10.0
 whitenoise==6.7.0
 django-silk==5.2.0
+python-telegram-bot==21.7
