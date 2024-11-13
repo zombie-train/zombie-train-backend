@@ -43,24 +43,24 @@ services:
       deck-chores.execute-bot-scores.cron: "* * * * * */3 59 59"
     logging: *default-logging
 
-  nginx:
-    networks:
-      - app_network
-    build:
-      context: .
-      dockerfile: Dockerfile.nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./static:/app/static  # Bind mount for static files
-      - ./certs:/etc/letsencrypt  # Bind mount for Let's Encrypt certificates
-    depends_on:
-      - backend
-    environment:
-      - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS}
-      - ADMIN_EMAIL=${ADMIN_EMAIL}
-    logging: *default-logging
+  # nginx:
+  #   networks:
+  #     - app_network
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.nginx
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./static:/app/static  # Bind mount for static files
+  #     - ./certs:/etc/letsencrypt  # Bind mount for Let's Encrypt certificates
+  #   depends_on:
+  #     - backend
+  #   environment:
+  #     - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS}
+  #     - ADMIN_EMAIL=${ADMIN_EMAIL}
+  #   logging: *default-logging
 
   # officer:
   #   image: funkyfuture/deck-chores:1
