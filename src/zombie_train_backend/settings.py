@@ -101,7 +101,7 @@ CACHES = {
 
 if DEBUG and PERFORMANCE_TESTING:
     INSTALLED_APPS += ['silk']
-    MIDDLEWARE.insert(0, 'silk.middleware.SilkyMiddleware',)
+    MIDDLEWARE.insert(0, 'silk.middleware.SilkyMiddleware')
     SILKY_PYTHON_PROFILER = True
 
     LOGGING['loggers']['django.db.backends'] = {
@@ -109,7 +109,6 @@ if DEBUG and PERFORMANCE_TESTING:
         'level': 'DEBUG',
         'propagate': False,
     }
-
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -218,5 +217,3 @@ STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "user.GameUser"
-
-

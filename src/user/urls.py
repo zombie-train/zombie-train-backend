@@ -14,7 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.urls import path, include
+from django.urls import path, re_path, include
 from rest_framework.routers import DefaultRouter
 
 from user import views
@@ -25,6 +25,6 @@ router.register(r'users', views.UserViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('profile/', views.UserProfileView.as_view(), name='user-profile'),
-    path('profile/save/', views.UserSaveView.as_view(), name='user-save'),
+    re_path('profile/?$', views.UserProfileView.as_view(), name='user-profile'),
+    re_path('profile/save/?$', views.UserSaveView.as_view(), name='user-save'),
 ]

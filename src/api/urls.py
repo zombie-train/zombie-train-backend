@@ -15,7 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
-from django.urls import path
+from django.urls import path, re_path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
@@ -40,9 +40,9 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    path("current-time/", views.CurrentTimeView.as_view(), name="current-time"),
-    path("time/", unigram_views.TimeView.as_view(), name="time"),
-    path("regions/", views.RegionViewSet.as_view(({"get": "list"}))),
+    re_path("current-time/?$", views.CurrentTimeView.as_view(), name="current-time"),
+    re_path("time/?$", unigram_views.TimeView.as_view(), name="time"),
+    re_path("regions/?$", views.RegionViewSet.as_view(({"get": "list"}))),
     path(
         "swagger<format>/", schema_view.without_ui(cache_timeout=0), name="schema-json"
     ),
