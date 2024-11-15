@@ -41,27 +41,35 @@ def create_invoice(request):
         }, status=response.status_code)    
 
 
-async def _refund_star_payment(user_id, transaction_id):
+async def _refund_star_payment(user_id, telegram_payment_charge_id):
     bot = get_telegram_bot()
     async with bot:
-        return await bot.refund_invoice(user_id, transaction_id)
+        return await bot.refund_star_payment(user_id, telegram_payment_charge_id)
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def refund(request):
-    response = asyncio.run(_refund_star_payment(
-        user_id=request.data["user_id"], 
-        transaction_id=request.data["transaction_id"]
+    user_id = request.data.pop("userId", "")
+    transaction_id = request.data.pop("transactionId", "")
+
+    if not user_id or not transaction_id:
+        return Response({
+            "error": "userId and transactionId are required"
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    is_success = asyncio.run(_refund_star_payment(
+        user_id=user_id,
+        telegram_payment_charge_id=transaction_id
     ))
 
-    if response.status_code == status.HTTP_200_OK:
+    if is_success:
         return Response({
              "message": 'The refund to the buyer was successfully made'
         },status=status.HTTP_200_OK)
     else:
         return Response({
-            "error": response.data
-        }, status=response.status_code)
+            "error": "Something went wrong"
+        }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 
 @api_view(["POST"])
@@ -91,3 +99,52 @@ def order_receipt(request):
     return Response({
         "error": "Target transaction not found"
     }, status=status.HTTP_404_NOT_FOUND)
+
+async def _get_star_transactions(offset=None, limit=None):
+    bot = get_telegram_bot()
+    async with bot:
+        return await bot.get_star_transactions(
+            offset=offset,
+            limit=limit
+        )
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def purchase_history(request):
+    offset = request.query_params.get("totalPass", None)
+    limit = request.query_params.get("amount", None)
+
+    if not limit:
+        return Response({
+            "error": "Param 'amount' is required"
+        }, status=status.HTTP_404_NOT_FOUND)
+
+    response = asyncio.run(_get_star_transactions(
+        offset=offset,
+        limit=limit
+    ))
+
+    return Response({
+        "transactions": [t.to_dict() for t in response.transactions if t.source is not None]
+    }, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def refund_history(request):
+    offset = request.query_params.get("totalPass", None)
+    limit = request.query_params.get("amount", None)
+
+    if not limit:
+        return Response({
+            "error": "Param 'amount' is required"
+        }, status=status.HTTP_404_NOT_FOUND)
+
+    response = asyncio.run(_get_star_transactions(
+        offset=offset,
+        limit=limit
+    ))
+
+    return Response({
+        "transactions": [t.to_dict() for t in response.transactions if t.receiver is not None]
+    }, status=status.HTTP_200_OK)

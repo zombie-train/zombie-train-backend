@@ -13,15 +13,6 @@ urlpatterns = [
     path('create-invoice/', unigram_views.create_invoice, name='create-invoice'),
     path('refund/', unigram_views.refund, name='refund'),
     path('order-receipt/', unigram_views.order_receipt, name='order-receipt'),
+    path('purchase-history/', unigram_views.purchase_history, name='purchase-history'),
+    path('refund-history/', unigram_views.refund_history, name='refund-history'),
 ]
-
-# TODO:
-"""
-+ /time
-+ /create-invoice 
-+ /refund
-+ /order-receipt
-- /purchase-history
-- /refund-history
-
-"""
