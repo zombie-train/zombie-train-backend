@@ -1,11 +1,14 @@
-from rest_framework.decorators import api_view, permission_classes
-from invoice.views import InvoiceViewSet, TransactionViewSet
-from invoice.models import Transaction
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
-from rest_framework.response import Response
-from api.utils import get_telegram_bot
 import asyncio
+
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.response import Response
+
+from api.utils import get_telegram_bot
+from invoice.models import Transaction
+from invoice.views import InvoiceViewSet
+
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
@@ -56,11 +59,15 @@ def refund(request):
         return Response({
             "error": "userId and transactionId are required"
         }, status=status.HTTP_400_BAD_REQUEST)
-
-    is_success = asyncio.run(_refund_star_payment(
-        user_id=user_id,
-        telegram_payment_charge_id=transaction_id
-    ))
+    try:
+        is_success = asyncio.run(_refund_star_payment(
+            user_id=user_id,
+            telegram_payment_charge_id=transaction_id
+        ))
+    except Exception as e:
+        return Response({
+            "error": str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
 
     if is_success:
         return Response({
@@ -147,4 +154,20 @@ def refund_history(request):
 
     return Response({
         "transactions": [t.to_dict() for t in response.transactions if t.receiver is not None]
+    }, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def update_order_receipt(request):
+    transaction = request.data
+    Transaction.objects.create(
+        item_id=transaction["invoice_payload"],
+        price=transaction["total_amount"],
+        tg_buyer_id=transaction["provider_payment_charge_id"].split('_')[0],
+        tg_payment_id=transaction["telegram_payment_charge_id"],
+    )
+
+    return Response({
+        "message": "Transaction created"
     }, status=status.HTTP_200_OK)

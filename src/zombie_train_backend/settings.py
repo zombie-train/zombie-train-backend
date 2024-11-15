@@ -28,6 +28,7 @@ SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DJANGO_DEBUG") == "true"
+PERFORMANCE_TESTING = False
 
 ALLOWED_HOSTS = [
     # TODO: remove this after testing
@@ -98,7 +99,7 @@ CACHES = {
     }
 }
 
-if DEBUG:
+if DEBUG and PERFORMANCE_TESTING:
     INSTALLED_APPS += ['silk']
     MIDDLEWARE.insert(0, 'silk.middleware.SilkyMiddleware',)
     SILKY_PYTHON_PROFILER = True

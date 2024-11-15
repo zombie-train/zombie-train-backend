@@ -11,7 +11,7 @@ oauth2_endpoint_views = [
     path('revoke-token/', oauth2_views.RevokeTokenView.as_view(), name="revoke-token"),
 ]
 
-if settings.DEBUG:
+if settings.DEBUG and settings.PERFORMANCE_TESTING:
     # OAuth2 Application Management endpoints
     oauth2_endpoint_views += [
         path('applications/', oauth2_views.ApplicationList.as_view(), name="list"),
@@ -34,7 +34,7 @@ urlpatterns = [
     path('api/', include('api.urls')),
 ]
 
-if settings.DEBUG:
+if settings.DEBUG and settings.PERFORMANCE_TESTING:
     try:
         urlpatterns += [path('silk/', include('silk.urls', namespace='silk'))]
     except ImportError:
