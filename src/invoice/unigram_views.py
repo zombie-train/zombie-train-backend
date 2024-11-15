@@ -1,5 +1,6 @@
 from rest_framework.decorators import api_view, permission_classes
-from invoice.views import InvoiceViewSet
+from invoice.views import InvoiceViewSet, TransactionViewSet
+from invoice.models import Transaction
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from rest_framework.response import Response
@@ -61,3 +62,32 @@ def refund(request):
         return Response({
             "error": response.data
         }, status=response.status_code)
+    
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def order_receipt(request):
+    tg_buyer_id = request.data.pop("userId", "")
+    item_id = request.data.pop("itemId", "")
+
+    if not tg_buyer_id or not item_id:
+        return Response({
+            "error": "userId and itemId are required"
+        }, status=status.HTTP_404_NOT_FOUND)
+    
+    transaction = Transaction.objects.filter(tg_buyer_id=tg_buyer_id, item_id=item_id).first()
+
+    if transaction and not transaction.is_receipt_delivered:
+        transaction.is_receipt_delivered = True
+        transaction.save()
+
+        return Response({
+            "id": transaction.id,
+            "buyerId": transaction.tg_buyer_id,
+            "itemId": transaction.item_id,
+            "price": transaction.price,
+        }, status=status.HTTP_200_OK)
+
+    return Response({
+        "error": "Target transaction not found"
+    }, status=status.HTTP_404_NOT_FOUND)

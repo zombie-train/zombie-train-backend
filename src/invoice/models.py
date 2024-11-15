@@ -29,5 +29,6 @@ class Transaction(models.Model):
     price = models.FloatField()
     tg_buyer_id = models.CharField(max_length=255)
     tg_payment_id = models.CharField(max_length=255)
+    is_receipt_delivered = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

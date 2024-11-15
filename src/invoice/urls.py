@@ -12,6 +12,7 @@ urlpatterns = [
     path('', include(router.urls)),
     path('create-invoice/', unigram_views.create_invoice, name='create-invoice'),
     path('refund/', unigram_views.refund, name='refund'),
+    path('order-receipt/', unigram_views.order_receipt, name='order-receipt'),
 ]
 
 # TODO:
@@ -19,7 +20,7 @@ urlpatterns = [
 + /time
 + /create-invoice 
 + /refund
-- /order-receipt
++ /order-receipt
 - /purchase-history
 - /refund-history
 
