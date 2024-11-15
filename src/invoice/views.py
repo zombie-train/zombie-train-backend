@@ -4,12 +4,12 @@ import telegram
 from rest_framework import mixins
 from rest_framework import status
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
 from api.utils import get_telegram_bot
-from invoice.models import Invoice
-from invoice.serializers import InvoiceSerializer
+from invoice.models import Invoice, Transaction
+from invoice.serializers import InvoiceSerializer, TransactionSerializer
 
 
 class InvoiceViewSet(
@@ -21,7 +21,7 @@ class InvoiceViewSet(
 ):
     queryset = Invoice.objects.all()
     serializer_class = InvoiceSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAdminUser]
 
     async def _create_invoice_link(self, invoice: dict):
         bot = get_telegram_bot()
@@ -51,3 +51,11 @@ class InvoiceViewSet(
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+class TransactionViewSet(mixins.CreateModelMixin, 
+                         mixins.RetrieveModelMixin,
+                         viewsets.GenericViewSet):
+    queryset = Transaction.objects.all()
+    serializer_class = TransactionSerializer
+    permission_classes = [IsAdminUser] 

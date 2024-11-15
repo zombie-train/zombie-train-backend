@@ -23,3 +23,11 @@ class Invoice(models.Model):
     photo_width = models.IntegerField(default=0)
     photo_height = models.IntegerField(default=0)
     
+class Transaction(models.Model):
+    id = models.AutoField(primary_key=True)
+    item_id = models.CharField(max_length=255)
+    price = models.FloatField()
+    tg_buyer_id = models.CharField(max_length=255)
+    tg_payment_id = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
