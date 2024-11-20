@@ -2,7 +2,7 @@ import asyncio
 
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 
 from api.utils import get_telegram_bot
@@ -55,10 +55,11 @@ def refund(request):
     user_id = request.data.pop("userId", "")
     transaction_id = request.data.pop("transactionId", "")
 
-    if not user_id or not transaction_id:
+    if (not user_id or not transaction_id) and user_id != request.user_id:
         return Response({
             "error": "userId and transactionId are required"
         }, status=status.HTTP_400_BAD_REQUEST)
+
     try:
         is_success = asyncio.run(_refund_star_payment(
             user_id=user_id,
@@ -158,7 +159,7 @@ def refund_history(request):
 
 
 @api_view(["POST"])
-@permission_classes([AllowAny])
+@permission_classes([IsAdminUser])
 def update_order_receipt(request):
     transaction = request.data
     Transaction.objects.create(
