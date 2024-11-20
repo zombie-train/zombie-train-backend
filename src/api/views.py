@@ -1,5 +1,6 @@
 from rest_framework import viewsets
 from rest_framework.permissions import AllowAny
+from rest_framework.decorators import api_view, permission_classes
 from api.models import Region
 from api.serializers import RegionSerializer
 from django.core.cache import cache
@@ -54,4 +55,7 @@ class CurrentTimeView(APIView):
         }
         return Response(response_data)
 
-
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def health(request):
+    return Response({"status": "ok"})

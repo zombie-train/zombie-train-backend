@@ -2,8 +2,7 @@
 
 container_registry="zombietrain.azurecr.io"
 name="zombie-train-backend"
-version="v1.6.0"
-
+version="v1.8.0"
 
 # Set up buildx
 docker buildx create --name mybuilder --use
