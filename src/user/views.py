@@ -28,8 +28,7 @@ class UserViewSet(viewsets.ModelViewSet):
         if self.request.method == 'POST':
             permission_classes = [permissions.AllowAny]
         elif self.request.method == 'GET':
-            permission_classes = [IsAuthenticated,
-                                  has_permission(UserPermissions.VIEW_USER)]
+            permission_classes = [permissions.AllowAny]
         elif self.request.method == 'PUT':
             permission_classes = [IsAuthenticated,
                                   has_permission(UserPermissions.CHANGE_USER)]
