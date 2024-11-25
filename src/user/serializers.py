@@ -29,7 +29,13 @@ class UserSerializer(serializers.ModelSerializer):
             "is_suspicious",
             "password",
             "date_joined",
+            "referral",
         ]
+
+    def validate_referral(self, value):
+        if value and not GameUser.objects.filter(username=value).exists():
+            raise serializers.ValidationError("Invalid referral username")
+        return value
 
     def get_current_region_id(self, obj):
         return obj.current_region.id if obj.current_region else None

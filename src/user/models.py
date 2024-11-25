@@ -22,6 +22,9 @@ class GameUser(AbstractUser):
     is_cheater = models.BooleanField(default=False)
     is_suspicious = models.BooleanField(default=False)
     current_save = models.TextField(default="")
+    referral = models.CharField(max_length=255,
+                                default=None,
+                                null=True, blank=True)
 
     def __str__(self):
         return self.username
