@@ -46,17 +46,20 @@ class ScoreListCreateView(generics.ListCreateAPIView):
 class LeaderboardListView(APIView):
 
     def get(self, request):
-        queryset = Leaderboard.objects.all().order_by("-score__value")
+        queryset_objects = Leaderboard.objects
         score_dt = self.request.query_params.get("date", None)
+        offset = self.request.query_params.get("offset", None)
+        limit = self.request.query_params.get("limit", None)
+
         if score_dt is not None:
             try:
                 parsed_date = parse_date(score_dt)
                 if parsed_date:
-                    queryset = queryset.filter(score_dt=parsed_date)
+                    queryset = queryset_objects.filter(score_dt=parsed_date)
             except ValueError as e:
                 raise e  # Optionally, handle invalid date format
         else:
-            queryset = queryset.filter(score_dt=timezone.now().date())
+            queryset = queryset_objects.filter(score_dt=timezone.now().date())
 
         queryset = (
             queryset.values("user_id", user_name=F("user__username"))
@@ -64,7 +67,15 @@ class LeaderboardListView(APIView):
             .order_by("-total_score")
         )
 
-        limit = self.request.query_params.get("limit", None)
+        count = queryset.count()
+
+        if offset is not None:
+            try:
+                offset = int(offset)
+                queryset = queryset[offset:]
+            except ValueError as e:
+                raise e  # Optionally, handle invalid offset format
+
         if limit is not None:
             try:
                 limit = int(limit)
@@ -74,7 +85,7 @@ class LeaderboardListView(APIView):
         queryset = queryset.annotate(
             position=Window(expression=RowNumber(), order_by=F("total_score").desc())
         )
-        return Response(list(queryset), status=status.HTTP_200_OK)
+        return Response({"total": count, "data": list(queryset)}, status=status.HTTP_200_OK)
 
 
 @permission_classes([AllowAny])
