@@ -2,14 +2,14 @@ import json
 
 from rest_framework import generics, permissions
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 import logging
 
 from api.permissions import has_permission
 from user.models import GameUser
 from .permissions import UserPermissions
-from .serializers import UserSerializer, UserSaveSerializer
+from .serializers import UserSerializer, UserSaveSerializer, TelegramUserSerializer
 from api.utils import unhash_value
 
 logger = logging.getLogger(__name__)
@@ -21,20 +21,21 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
 
     def get_permissions(self):
-        permission_classes = [IsAuthenticated,
-                              has_permission(UserPermissions.VIEW_USER),
-                              has_permission(UserPermissions.CHANGE_USER),
-                              has_permission(UserPermissions.DELETE_USER)]
-        if self.request.method == 'POST':
+        if self.action == 'create':  
             permission_classes = [permissions.AllowAny]
-        elif self.request.method == 'GET':
+        elif self.action == 'list':
+            permission_classes = [IsAdminUser]
+        elif self.action == 'retrieve':
             permission_classes = [permissions.AllowAny]
-        elif self.request.method == 'PUT':
+        elif self.action == 'update' or self.action == 'partial_update':
             permission_classes = [IsAuthenticated,
-                                  has_permission(UserPermissions.CHANGE_USER)]
-        elif self.request.method == 'DELETE':
+                                has_permission(UserPermissions.CHANGE_USER)]
+        elif self.action == 'destroy':
             permission_classes = [IsAuthenticated,
-                                  has_permission(UserPermissions.DELETE_USER)]
+                                has_permission(UserPermissions.DELETE_USER)]
+        else:
+            permission_classes = [IsAuthenticated]
+                
         return [permission() for permission in permission_classes]
 
 
@@ -74,3 +75,24 @@ class UserSaveView(generics.RetrieveUpdateAPIView):
         user.current_save = save
         user.save()
         return Response({"success": True})
+    
+
+class TelegramUserView(generics.ListAPIView):
+    serializer_class = TelegramUserSerializer
+    permission_classes = [IsAdminUser]
+
+    def get_queryset(self):
+        return GameUser.objects.filter(
+            username__regex=r'^\d+$'
+        )
+
+
+class ReferralView(generics.ListAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        username = self.request.user.username
+        return GameUser.objects.filter(
+            referral=username
+        )

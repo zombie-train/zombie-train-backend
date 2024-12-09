@@ -4,15 +4,12 @@ from rest_framework import serializers
 from api.models import Region
 from score.models import Leaderboard
 from user.models import GameUser
-
+from django.db.models import Sum
 
 class UserSerializer(serializers.ModelSerializer):
     current_region_id = serializers.IntegerField(required=False)
     current_region_name = serializers.SerializerMethodField(read_only=True)
-    current_region_score_id = serializers.IntegerField(
-        source="current_region_score.id", read_only=True
-    )
-    current_region_score_value = serializers.SerializerMethodField(read_only=True)
+    today_score_value = serializers.SerializerMethodField(read_only=True)
     password = serializers.CharField(write_only=True)
 
     class Meta:
@@ -22,8 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
             "username",
             "current_region_id",
             "current_region_name",
-            "current_region_score_id",
-            "current_region_score_value",
+            "today_score_value",
             "is_banned",
             "is_cheater",
             "is_suspicious",
@@ -43,9 +39,11 @@ class UserSerializer(serializers.ModelSerializer):
     def get_current_region_name(self, obj):
         return obj.current_region.name if obj.current_region else None
 
-    def get_current_region_score_value(self, obj):
-        # This method ensures a score value of 0 is returned if there's no score
-        return obj.current_region_score.value if obj.current_region_score else 0
+    def get_today_score_value(self, obj):
+        return Leaderboard.objects.filter(
+            user=obj,
+            score_dt=timezone.now().date(),
+        ).aggregate(total_score=Sum('score'))['total_score'] or 0
 
     def update(self, instance, validated_data):
         current_region_id = validated_data.pop("current_region_id", None)
@@ -83,6 +81,11 @@ class UserSerializer(serializers.ModelSerializer):
             user.save()
         return user
 
+
+class TelegramUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = GameUser
+        fields = ['username']
 
 class UserSaveSerializer(serializers.ModelSerializer):
     new_save = serializers.CharField(max_length=255, write_only=True)

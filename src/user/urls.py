@@ -24,7 +24,9 @@ router = DefaultRouter()
 router.register(r'users', views.UserViewSet)
 
 urlpatterns = [
-    path('', include(router.urls)),
     re_path('profile/?$', views.UserProfileView.as_view(), name='user-profile'),
     re_path('profile/save/?$', views.UserSaveView.as_view(), name='user-save'),
+    re_path('tg_users/?$', views.TelegramUserView.as_view(), name='telegram-users'),
+    re_path('referrals/?$', views.ReferralView.as_view(), name='referral'),
+    path('', include(router.urls)),
 ]
