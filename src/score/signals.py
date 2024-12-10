@@ -1,6 +1,6 @@
 import logging
 
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
 from django.db import transaction
@@ -28,6 +28,12 @@ def update_leaderboard(sender, instance, created, **kwargs):
         update_fields=['score_id']
     )
 
+
+@receiver(pre_save, sender=Score)
+def update_current_region_score(sender, instance, **kwargs):
+    if instance.score_ts.date() != timezone.now().date():
+        instance.user.current_region_score = None
+        instance.user.save()
 
 @receiver(post_save, sender=Score)
 def update_current_region_score(sender, instance, created, **kwargs):
