@@ -63,11 +63,13 @@ class ScoreSerializer(serializers.ModelSerializer):
             time_diff = timezone.now() - score_ts
             max_diff = (time_diff.total_seconds() / 60) * MAX_KILLED_ZOMBIES_PER_MINUTE
 
-            if abs(unsalted_value - last_score_value) > max_diff:
+            score_diff = unsalted_value - last_score_value
+            if score_diff < 0:
+                raise serializers.ValidationError("Score value cannot decrease.")
+            elif score_diff > max_diff:
                 raise serializers.ValidationError(
                     "Score value change is too large based on the time difference from the last score."
                 )
-
             return unsalted_value
         except ValueError as e:
             raise serializers.ValidationError("Invalid hashed value")
