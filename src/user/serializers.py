@@ -9,6 +9,7 @@ from django.db.models import Sum
 class UserSerializer(serializers.ModelSerializer):
     current_region_id = serializers.IntegerField(required=False)
     current_region_name = serializers.SerializerMethodField(read_only=True)
+    current_region_score_value = serializers.SerializerMethodField(read_only=True)
     today_score_value = serializers.SerializerMethodField(read_only=True)
     password = serializers.CharField(write_only=True)
 
@@ -20,6 +21,7 @@ class UserSerializer(serializers.ModelSerializer):
             "current_region_id",
             "current_region_name",
             "today_score_value",
+            "current_region_score_value",
             "is_banned",
             "is_cheater",
             "is_suspicious",
@@ -44,6 +46,10 @@ class UserSerializer(serializers.ModelSerializer):
             user=obj,
             score_dt=timezone.now().date(),
         ).aggregate(total_score=Sum('score'))['total_score'] or 0
+
+    def get_current_region_score_value(self, obj):
+        # This method ensures a score value of 0 is returned if there's no score
+        return obj.current_region_score.value if obj.current_region_score else 0
 
     def update(self, instance, validated_data):
         current_region_id = validated_data.pop("current_region_id", None)
