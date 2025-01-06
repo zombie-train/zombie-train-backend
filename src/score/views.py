@@ -118,13 +118,13 @@ class WorldMapView(APIView):
             zombies_left_total = max(
                 0, start_zombies_count - zombies_killed_total
             )
-            zombies_left_percentage = (
+            zombies_left_ratio = (
                 zombies_left_total / start_zombies_count
             )
             infestation_level = next(
                 filter(
                     lambda x: x["lower_bound"]
-                    <= zombies_left_percentage
+                    <= zombies_left_ratio
                     <= x["upper_bound"],
                     INFESTATION_RANGES,
                 ),
@@ -134,6 +134,7 @@ class WorldMapView(APIView):
             data.append(
                 {
                     "region": region_name,
+                    "zombies_left_ratio": zombies_left_ratio,
                     "zombies_left": zombies_left_total,
                     "infestation_level": infestation_level["name"],
                 }
