@@ -1,5 +1,4 @@
-from django.db.models import F, Window
-from django.db.models import Sum
+from django.db.models import F, Window, Case, When, Sum
 from django.db.models.functions import RowNumber
 from django.utils import timezone
 from django.utils.dateparse import parse_date
@@ -10,10 +9,8 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from api.permissions import has_permission
 from infestation.models import Infestation
 from score.models import Score, Leaderboard
-from score.permissions import ScorePermissions
 from score.serializers import ScoreSerializer
 
 INFESTATION_RANGES = [
@@ -62,7 +59,10 @@ class LeaderboardListView(APIView):
             queryset = queryset_objects.filter(score_dt=timezone.now().date())
 
         queryset = (
-            queryset.values("user_id", user_name=F("user__username"))
+            queryset.values("user_id", user_name=Case(
+                    When(user__nickname__isnull=False, then=F('user__nickname')),
+                    default=F('user__username'),
+                ))
             .annotate(total_score=Sum("score__value"))
             .order_by("-total_score")
         )
@@ -151,7 +151,10 @@ class SurroundingLeaderboardView(APIView):
         user_id = self.request.user.id
         queryset = (
             Leaderboard.objects.filter(score_dt=score_dt)
-            .values("user_id", user_name=F("user__username"))
+            .values("user_id", user_name=Case(
+                    When(user__nickname__isnull=False, then=F('user__nickname')),
+                    default=F('user__username'),
+                ))
             .annotate(
                 total_score=Sum("score__value"),
                 score_dt=F("score_dt"),

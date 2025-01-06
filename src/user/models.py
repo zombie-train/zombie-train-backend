@@ -17,6 +17,7 @@ class GameUser(AbstractUser):
                                              on_delete=models.SET_NULL,
                                              null=True, blank=True,
                                              related_name='user_current_region_scores')
+    nickname = models.CharField(max_length=255, default=None, null=True, blank=True)
 
     is_banned = models.BooleanField(default=False)
     is_cheater = models.BooleanField(default=False)
@@ -27,4 +28,4 @@ class GameUser(AbstractUser):
                                 null=True, blank=True)
 
     def __str__(self):
-        return self.username
+        return self.nickname or self.username

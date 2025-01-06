@@ -18,6 +18,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "username",
+            "nickname",
             "current_region_id",
             "current_region_name",
             "today_score_value",
