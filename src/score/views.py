@@ -8,16 +8,12 @@ from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from api.utils import INFESTATION_RANGES
 
 from infestation.models import Infestation
 from score.models import Score, Leaderboard
 from score.serializers import ScoreSerializer
 
-INFESTATION_RANGES = [
-    {"name": "low", "lower_bound": 0, "upper_bound": 0.33},
-    {"name": "medium", "lower_bound": 0.34, "upper_bound": 0.66},
-    {"name": "high", "lower_bound": 0.67, "upper_bound": 1},
-]
 
 SURROUNDING_LEADERBOARD_LIMIT = 3
 
@@ -110,17 +106,15 @@ class WorldMapView(APIView):
         scores_dict = {
             score["region__name"]: score["zombie_killed"] for score in scores_per_region
         }
-        all_infestations = Infestation.objects.values_list("region__name", "start_zombies_count")
+        all_infestations = Infestation.objects.values_list("region__name", "start_zombies_count", "start_zombies_ratio")
 
         data = []
-        for region_name, start_zombies_count in all_infestations:
+        for region_name, start_zombies_count, start_zombies_ratio in all_infestations:
             zombies_killed_total = scores_dict.get(region_name, 0)
             zombies_left_total = max(
                 0, start_zombies_count - zombies_killed_total
             )
-            zombies_left_ratio = (
-                zombies_left_total / start_zombies_count
-            )
+            zombies_left_ratio = (zombies_left_total / start_zombies_count) * start_zombies_ratio
             infestation_level = next(
                 filter(
                     lambda x: x["lower_bound"]
@@ -134,6 +128,8 @@ class WorldMapView(APIView):
             data.append(
                 {
                     "region": region_name,
+                    "zombies_start_ratio": start_zombies_ratio,
+                    "zombies_start_count": start_zombies_count,
                     "zombies_left_ratio": zombies_left_ratio,
                     "zombies_left": zombies_left_total,
                     "infestation_level": infestation_level["name"],

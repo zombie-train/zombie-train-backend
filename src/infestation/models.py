@@ -9,9 +9,11 @@ class Infestation(models.Model):
     )
 
     start_zombies_count = models.IntegerField(default=100)  # to avoid division by zero
+    start_zombies_ratio = models.FloatField(default=0.0)
 
     def __str__(self):
         return f"{self.region.name} - {self.start_zombies_count} zombies"
 
     def __repr__(self):
         return f"{self.region.name} - {self.start_zombies_count} zombies"
+

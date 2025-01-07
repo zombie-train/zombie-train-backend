@@ -1,28 +1,50 @@
+import logging
 import os
+import random
+from typing import List
+
 from django.core.management.base import BaseCommand
+from django.db.models import Sum
+from django.utils import timezone
 from dotenv import load_dotenv
+
 from infestation.models import Infestation
 from score.models import Leaderboard
 from user.models import GameUser
-from django.utils import timezone
-from django.db.models import Sum
-import logging
 
 load_dotenv()
 
 logger = logging.getLogger("django")
 
+DEFAULT_INFESTATION_COMPLEXITY_INCREASE_THRESHOLD = 0.9
 DEFAULT_INFESTATION_COMPLEXITY_INCREASE = 0.1
-
-INFESTATION_RANGES = [
-    {"name": "low", "lower_bound": 0, "upper_bound": 0.33},
-    {"name": "medium", "lower_bound": 0.34, "upper_bound": 0.66},
-    {"name": "high", "lower_bound": 0.67, "upper_bound": 1},
-]
 
 
 class Command(BaseCommand):
     help = "Reset all necessary parameters for a new day"
+
+
+    def _generate_regions_infestation_ratio(self, regions_count: int) -> List[float]:
+        step = 0.1
+
+        MAX_INFESTATION = 1.0
+        MIN_INFESTATION = 0.0
+
+        infestations = []
+        init_start_range = 0.2
+        init_end_range = 0.45
+        total_infestation = 0
+
+        for i in range(regions_count - 1):
+            end_range = init_end_range + step * i - total_infestation
+            start_range = min(max(init_start_range - step * i, MIN_INFESTATION), end_range)
+            infestation = random.uniform(start_range, end_range)
+            infestations.append(infestation)
+            total_infestation += infestation
+        infestations.append(MAX_INFESTATION - total_infestation)
+
+        return sorted(infestations)
+
 
     def handle(self, *args, **kwargs):
         self.reset_infestation()
@@ -38,49 +60,38 @@ class Command(BaseCommand):
         # Workaround to make reset_infestation work for with the cron job
         yesterday_date = today_date - timezone.timedelta(days=1)
         logger.warning(f"Resetting all necessary parameters for {yesterday_date}")
-        scores_per_region = (
+        total_zombie_killed = (
             Leaderboard.objects.filter(score_dt=yesterday_date)
-            .values("region__name")
-            .annotate(zombie_killed=Sum("score__value"))
-            .order_by("region__name")
+            .aggregate(zombie_killed=Sum("score__value"))
+            .get("zombie_killed", 0)
         )
 
-        logger.warning(f"Current scores per region: {scores_per_region}")
+        logger.warning(f"Current scores per region: {total_zombie_killed}")
 
-        infestations = Infestation.objects.all()
+        infestations = list(Infestation.objects.all())
+        initial_zombie_spawned = sum(infestation.start_zombies_count for infestation in infestations)
 
-        for infestation in infestations:
-            region_name = infestation.region.name
-            try:
-                region_score = scores_per_region.get(region__name=region_name)
-            except Leaderboard.DoesNotExist:
-                logger.warning(
-                    self.style.WARNING(
-                        f"{region_name} has no scores for today, skipping infestation update"
-                    )
-                )
-                continue
-
-            initial_infestation = infestation.start_zombies_count
-            if region_score["zombie_killed"] >= initial_infestation:
-                infestation_complexity_increase = (
+        if total_zombie_killed >= initial_zombie_spawned * DEFAULT_INFESTATION_COMPLEXITY_INCREASE_THRESHOLD:
+            total_zombies_to_spawn = int(initial_zombie_spawned * (1 + (
                     os.getenv("INFESTATION_COMPLEXITY_INCREASE", None)
                     or DEFAULT_INFESTATION_COMPLEXITY_INCREASE
-                )
-                infestation.start_zombies_count = int(
-                    initial_infestation * (1 + float(infestation_complexity_increase))
-                )
-                infestation.save()
-                logger.warning(
-                    self.style.SUCCESS(
-                        f"{region_name} (zombie killed {region_score['zombie_killed']}): updating infestation "
-                        f"from {initial_infestation} to {infestation.start_zombies_count}"
-                    )
-                )
+                )))
+        else:
+            total_zombies_to_spawn = initial_zombie_spawned
+
+        infestations_ratio = self._generate_regions_infestation_ratio(len(infestations))
+        random.shuffle(infestations)
+        seen_lowest_region = 0
+        # The first infestation is the one with the lowest ratio
+        for i, infestation in enumerate(infestations):
+            # Workaround to set Australia lowest possible infestation
+            if infestation.region.name == "Australia":
+                current_infestation_ratio = infestations_ratio[0]
+                seen_lowest_region = 1
             else:
-                logger.warning(
-                    self.style.WARNING(
-                        f"{region_name} (zombie killed {region_score['zombie_killed']}) has not reached the "
-                        f"required score to update the infestation {initial_infestation}"
-                    )
-                )
+                current_infestation_ratio = infestations_ratio[i + 1 - seen_lowest_region]
+            infestation.start_zombies_count = int(total_zombies_to_spawn * current_infestation_ratio)
+            infestation.start_zombies_ratio = current_infestation_ratio
+            infestation.save()
+
+        logger.warning(f"Successfully reset infestation for {yesterday_date}")

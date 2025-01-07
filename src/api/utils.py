@@ -27,6 +27,11 @@ def get_default_region():
         logger.warning(str(e))
     return None
 
+INFESTATION_RANGES = [
+    {"name": "low", "lower_bound": 0, "upper_bound": 0.11},
+    {"name": "medium", "lower_bound": 0.12, "upper_bound": 0.23},
+    {"name": "high", "lower_bound": 0.24, "upper_bound": 1},
+]
 
 
 def unhash_value(hashed_value):
