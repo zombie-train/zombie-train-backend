@@ -22,6 +22,7 @@ class GameUser(AbstractUser):
     is_banned = models.BooleanField(default=False)
     is_cheater = models.BooleanField(default=False)
     is_suspicious = models.BooleanField(default=False)
+    mvp_count = models.IntegerField(default=0)
     current_save = models.TextField(default="")
     referral = models.CharField(max_length=255,
                                 default=None,

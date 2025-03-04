@@ -26,6 +26,7 @@ class UserSerializer(serializers.ModelSerializer):
             "is_banned",
             "is_cheater",
             "is_suspicious",
+            "mvp_count",
             "password",
             "date_joined",
             "referral",

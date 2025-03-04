@@ -4,7 +4,8 @@ import random
 from typing import List
 
 from django.core.management.base import BaseCommand
-from django.db.models import Sum
+from django.db.models import Sum, Window, F, Count
+from django.db.models.functions import DenseRank
 from django.utils import timezone
 from dotenv import load_dotenv
 
@@ -44,10 +45,42 @@ class Command(BaseCommand):
         infestations.append(MAX_INFESTATION - total_infestation)
 
         return sorted(infestations)
+    
+    def update_mvp_count():
+        # First, get daily totals for each user
+        daily_totals = (
+            Leaderboard.objects.values('user_id', 'score_dt')
+            .annotate(
+                daily_score=Sum('score__value')
+            )
+        )
 
+        # Then, rank users for each day based on their total score
+        daily_rankings = daily_totals.annotate(
+            rank=Window(
+                expression=DenseRank(),
+                partition_by=['score_dt'],
+                order_by=F('daily_score').desc()
+            )
+        )
+
+        # Finally, count the number of times each user was ranked #1
+        mvp_counts = (
+            daily_rankings.filter(rank=1)
+            .values('user_id')
+            .annotate(mvp_count=Count('user_id'))
+            .order_by('-mvp_count')
+        )
+
+        for result in mvp_counts:
+            print(f"user_id: {result['user_id']} mvp_count: {result['mvp_count']}")
+            GameUser.objects.filter(id=result['user_id']).update(mvp_count=result['mvp_count'])
+
+        return mvp_counts
 
     def handle(self, *args, **kwargs):
         self.reset_infestation()
+        self.update_mvp_count()
         updated_count = GameUser.objects.update(current_region_score=None)
         logger.warning(
             self.style.SUCCESS(
