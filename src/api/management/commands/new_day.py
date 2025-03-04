@@ -46,7 +46,7 @@ class Command(BaseCommand):
 
         return sorted(infestations)
     
-    def update_mvp_count():
+    def update_mvp_count(self):
         # First, get daily totals for each user
         daily_totals = (
             Leaderboard.objects.values('user_id', 'score_dt')
@@ -79,7 +79,7 @@ class Command(BaseCommand):
         return mvp_counts
 
     def handle(self, *args, **kwargs):
-        self.reset_infestation()
+        # self.reset_infestation()
         self.update_mvp_count()
         updated_count = GameUser.objects.update(current_region_score=None)
         logger.warning(
