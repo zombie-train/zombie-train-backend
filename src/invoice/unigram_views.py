@@ -91,7 +91,7 @@ def order_receipt(request):
             "error": "userId and itemId are required"
         }, status=status.HTTP_404_NOT_FOUND)
     
-    transaction = Transaction.objects.filter(tg_buyer_id=tg_buyer_id, item_id=item_id).first()
+    transaction = Transaction.objects.filter(tg_buyer_id=tg_buyer_id, item_id=item_id).order_by('-created_at').first()
 
     if transaction and not transaction.is_receipt_delivered:
         transaction.is_receipt_delivered = True
